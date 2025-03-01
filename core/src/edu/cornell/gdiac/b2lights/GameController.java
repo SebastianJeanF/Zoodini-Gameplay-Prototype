@@ -244,7 +244,17 @@ public class GameController implements Screen, ContactListener {
 		if (input.didReset()) {
 			reset();
 		}
-		
+
+		// Handle swapping characters
+		if (input.didSwap()){
+			// Set current avatar's velocity to 0
+			DudeModel avatar = level.getAvatar();
+			avatar.setMovement(0,0 );
+
+			// Swap the two avatars
+			level.swap();
+		}
+
 		// Now it is time to maybe switch screens.
 		if (input.didExit()) {
 			listener.exitScreen(this, EXIT_QUIT);
@@ -273,12 +283,13 @@ public class GameController implements Screen, ContactListener {
 		// Process actions in object model
 		DudeModel avatar = level.getAvatar();
 		InputController input = InputController.getInstance();
-		
-		if (input.didForward()) {
-			level.activateNextLight();
-		} else if (input.didBack()){
-			level.activatePrevLight();
-		}
+
+		// Press N or P to switch light modes
+//		if (input.didForward()) {
+//			level.activateNextLight();
+//		} else if (input.didBack()){
+//			level.activatePrevLight();
+//		}
 		
 		// Rotate the avatar to face the direction of movement
 		angleCache.set(input.getHorizontal(),input.getVertical());
@@ -291,6 +302,10 @@ public class GameController implements Screen, ContactListener {
 		angleCache.scl(avatar.getForce());
 		avatar.setMovement(angleCache.x,angleCache.y);
 		avatar.applyForce();
+
+		// Stops afk avatar from moving, if he got hit by the main avatar
+		DudeModel afkAvatar = level.getAvatarAFK();
+		afkAvatar.applyForce();
 
 		// Turn the physics engine crank.
 		level.update(dt);

@@ -69,7 +69,7 @@ public class ObstacleCanvas {
 	private PolygonSpriteBatch spriteBatch;
 	
 	/** Rendering context for the debug outlines */
-	//private ShapeRenderer debugRender;
+	private ShapeRenderer debugRender;
 	
 	/** Track whether or not we are active (for error checking) */
 	private DrawPass active;
@@ -112,14 +112,14 @@ public class ObstacleCanvas {
 		} else {
 			spriteBatch = new PolygonSpriteBatch();
 		}
-		//debugRender = new ShapeRenderer();
+		debugRender = new ShapeRenderer();
 		
 		// Set the projection matrix (for proper scaling)
 		camera = new OrthographicCamera(getWidth(),getHeight());
 		camera.setToOrtho(false);
 		
 		spriteBatch.setProjectionMatrix(camera.combined);
-		//debugRender.setProjectionMatrix(camera.combined);
+		debugRender.setProjectionMatrix(camera.combined);
 
 		// Initialize the cache objects
 		holder = new TextureRegion();
@@ -944,9 +944,9 @@ public class ObstacleCanvas {
     	camera.update();
 		global.setAsAffine(affine);
     	global.mulLeft(camera.combined);
-    	//debugRender.setProjectionMatrix(global);
+    	debugRender.setProjectionMatrix(global);
 		
-    	//debugRender.begin(ShapeRenderer.ShapeType.Line);
+    	debugRender.begin(ShapeRenderer.ShapeType.Line);
     	active = DrawPass.DEBUG;
     }
     
@@ -962,9 +962,9 @@ public class ObstacleCanvas {
 		global.idt();
 		global.scl(sx,sy,1.0f);
     	global.mulLeft(camera.combined);
-    	//debugRender.setProjectionMatrix(global);
+    	debugRender.setProjectionMatrix(global);
 		
-    	//debugRender.begin(ShapeRenderer.ShapeType.Line);
+    	debugRender.begin(ShapeRenderer.ShapeType.Line);
     	active = DrawPass.DEBUG;
     }
 
@@ -974,9 +974,9 @@ public class ObstacleCanvas {
 	 * Nothing is flushed to the graphics card until the method end() is called.
 	 */
     public void beginDebug() {
-    	//debugRender.setProjectionMatrix(camera.combined);
+    	debugRender.setProjectionMatrix(camera.combined);
     	
-    	//debugRender.begin(ShapeRenderer.ShapeType.Line);
+    	debugRender.begin(ShapeRenderer.ShapeType.Line);
     	active = DrawPass.DEBUG;
     }
 
@@ -984,7 +984,7 @@ public class ObstacleCanvas {
 	 * Ends the debug drawing sequence, flushing textures to the graphics card.
 	 */
     public void endDebug() {
-    	//debugRender.end();
+    	debugRender.end();
     	active = DrawPass.INACTIVE;
     }
     
@@ -1003,20 +1003,20 @@ public class ObstacleCanvas {
 		}
 		
     	float x0, y0, x1, y1;
-    	//debugRender.setColor(color);
+    	debugRender.setColor(color);
     	for(int ii = 0; ii < shape.getVertexCount()-1; ii++) {
     		shape.getVertex(ii  ,vertex);
     		x0 = x+vertex.x; y0 = y+vertex.y;
     		shape.getVertex(ii+1,vertex);
     		x1 = x+vertex.x; y1 = y+vertex.y;
-    		//debugRender.line(x0, y0, x1, y1);
+    		debugRender.line(x0, y0, x1, y1);
     	}
     	// Close the loop
 		shape.getVertex(shape.getVertexCount()-1,vertex);
 		x0 = x+vertex.x; y0 = y+vertex.y;
 		shape.getVertex(0,vertex);
 		x1 = x+vertex.x; y1 = y+vertex.y;
-		//debugRender.line(x0, y0, x1, y1);
+		debugRender.line(x0, y0, x1, y1);
     }
 
     /**
@@ -1038,7 +1038,7 @@ public class ObstacleCanvas {
 		local.rotateRad(angle);
 		
     	float x0, y0, x1, y1;
-    	//debugRender.setColor(color);
+    	debugRender.setColor(color);
     	for(int ii = 0; ii < shape.getVertexCount()-1; ii++) {
     		shape.getVertex(ii  ,vertex);
     		local.applyTo(vertex);
@@ -1046,7 +1046,7 @@ public class ObstacleCanvas {
     		shape.getVertex(ii+1,vertex);
     		local.applyTo(vertex);
     		x1 = vertex.x; y1 = vertex.y;
-    		//debugRender.line(x0, y0, x1, y1);
+    		debugRender.line(x0, y0, x1, y1);
     	}
     	// Close the loop
 		shape.getVertex(shape.getVertexCount()-1,vertex);
@@ -1055,7 +1055,7 @@ public class ObstacleCanvas {
 		shape.getVertex(0,vertex);
 		local.applyTo(vertex);
 		x1 = vertex.x; y1 = vertex.y;
-		//debugRender.line(x0, y0, x1, y1);
+		debugRender.line(x0, y0, x1, y1);
     }
 
     /**
@@ -1080,7 +1080,7 @@ public class ObstacleCanvas {
 		local.rotateRad(angle);
 		
     	float x0, y0, x1, y1;
-    	//debugRender.setColor(color);
+    	debugRender.setColor(color);
     	for(int ii = 0; ii < shape.getVertexCount()-1; ii++) {
     		shape.getVertex(ii  ,vertex);
     		local.applyTo(vertex);
@@ -1088,7 +1088,7 @@ public class ObstacleCanvas {
     		shape.getVertex(ii+1,vertex);
     		local.applyTo(vertex);
     		x1 = vertex.x; y1 = vertex.y;
-    		//debugRender.line(x0, y0, x1, y1);
+    		debugRender.line(x0, y0, x1, y1);
     	}
     	// Close the loop
 		shape.getVertex(shape.getVertexCount()-1,vertex);
@@ -1097,7 +1097,7 @@ public class ObstacleCanvas {
 		shape.getVertex(0,vertex);
 		local.applyTo(vertex);
 		x1 = vertex.x; y1 = vertex.y;
-		//debugRender.line(x0, y0, x1, y1);
+		debugRender.line(x0, y0, x1, y1);
     }
     
     /** 
@@ -1117,8 +1117,8 @@ public class ObstacleCanvas {
 			return;
 		}
 		
-    	//debugRender.setColor(color);
-    	//debugRender.circle(x, y, shape.getRadius(),12);
+    	debugRender.setColor(color);
+    	debugRender.circle(x, y, shape.getRadius(),12);
     }
     
     /** 
@@ -1144,8 +1144,8 @@ public class ObstacleCanvas {
 		float y0 = y*sy;
 		float w = shape.getRadius()*sx;
 		float h = shape.getRadius()*sy;
-    	//debugRender.setColor(color);
-    	//debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
+    	debugRender.setColor(color);
+    	debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
     }
     
 	/**

@@ -62,6 +62,14 @@ public class DudeModel extends WheelObstacle {
 	/** Cache for internal force calculations */
 	private Vector2 forceCache = new Vector2();
 
+	// Sebastian: NEW CODE
+	/** Player types **/
+	enum Player {GAR, OTTO}
+
+	/** The type of player the DudeModel is **/
+	private Player playerType;
+	// END
+
 	/**
 	 * Returns the directional movement of this character.
 	 * 
@@ -200,9 +208,29 @@ public class DudeModel extends WheelObstacle {
 	 *
 	 * The main purpose of this constructor is to set the initial capsule orientation.
 	 */
-	public DudeModel() {
+//	public DudeModel() {
+//		super(0,0,1.0f);
+//		setFixedRotation(false);
+//	}
+
+	/**
+	 * Creates a new dude with degenerate settings
+	 *
+	 * The main purpose of this constructor is to set the initial capsule orientation.
+	 */
+	public DudeModel(String type) {
 		super(0,0,1.0f);
 		setFixedRotation(false);
+		if (type.equals("Gar")) {
+			playerType = Player.GAR;
+		}
+		else if (type.equals("Otto")) {
+			playerType = Player.OTTO;
+		}
+		else {
+			throw new IllegalArgumentException("Invalid player type");
+		}
+
 	}
 
 	/**
@@ -276,6 +304,7 @@ public class DudeModel extends WheelObstacle {
 		
 		// Apply force for movement
 		if (getMovement().len2() > 0f) {
+//			System.out.print("Applying force on character" + playerType + "\n");
 			forceCache.set(getMovement());
 			body.applyForce(forceCache,getPosition(),true);
 			animate = true;
@@ -292,8 +321,31 @@ public class DudeModel extends WheelObstacle {
 	 * @param delta Number of seconds since last animation frame
 	 */
 	public void update(float dt) {
+
+//		boolean isGar = playerType == Player.GAR;
+//
+//		// Animate if necessary
+//		if (animate && walkCool == 0) {
+//			System.out.print("Updating filmstrip for player " + playerType + "\n");
+//			if (filmstrip != null) {
+//				int next = (filmstrip.getFrame(isGar)+1) % filmstrip.getSize();
+//				filmstrip.setFrame(next, isGar);
+//			}
+//			walkCool = walkLimit;
+//		} else if (walkCool > 0) {
+//			walkCool--;
+//		} else if (!animate) {
+//			if (filmstrip != null) {
+//				filmstrip.setFrame(startFrame, isGar);
+//			}
+//			walkCool = 0;
+//		}
+
+
+
 		// Animate if necessary
 		if (animate && walkCool == 0) {
+			System.out.print("Updating filmstrip for player " + playerType + "\n");
 			if (filmstrip != null) {
 				int next = (filmstrip.getFrame()+1) % filmstrip.getSize();
 				filmstrip.setFrame(next);

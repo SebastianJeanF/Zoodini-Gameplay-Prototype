@@ -59,8 +59,11 @@ public class LevelModel {
 	public static final int WORLD_POSIT = 2;
 
 	// Physics objects for the game
-	/** Reference to the character avatar */
+	/** Reference to the currently selected avatar*/
 	private DudeModel avatar;
+	/** Reference to the AFK avatar*/
+	private DudeModel avatarAFK;
+
 	/** Reference to the goalDoor (for collision detection) */
 	private ExitModel goalDoor;
 
@@ -147,6 +150,16 @@ public class LevelModel {
 	public DudeModel getAvatar() {
 		return avatar;
 	}
+
+	/**
+	 * Returns a reference to the player avatar that's AFK
+	 *
+	 * @return a reference to the player avatar that's AFK
+	 */
+	public DudeModel getAvatarAFK() {
+		return avatarAFK;
+	}
+
 
 	/**
 	 * Returns a reference to the exit door
@@ -238,6 +251,14 @@ public class LevelModel {
 		debug  = false;
 	}
 
+	public void swap() {
+		DudeModel temp = avatar;
+		avatar = avatarAFK;
+		avatarAFK = temp;
+		attachLights(avatar);
+		attachLights(avatarAFK);
+	}
+
 	/**
 	 * Lays out the game geography from the given JSON file
 	 *
@@ -292,12 +313,21 @@ public class LevelModel {
 	    }
 
 		// Create the dude and attach light sources
-	    avatar = new DudeModel();
-	    JsonValue avdata = levelFormat.get("avatar");
+	    avatar = new DudeModel("Gar");
+	    JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
 	    avatar.setDrawScale(scale);
 		activate(avatar);
 		attachLights(avatar);
+
+
+		// Create the dude and attach light sources
+		avdata = levelFormat.get("avatarOtto");
+		avatarAFK = new DudeModel("Otto");
+		avatarAFK.initialize(directory, avdata);
+		avatarAFK.setDrawScale(scale);
+		activate(avatarAFK);
+		attachLights(avatarAFK);
 	}
 	
 	/**
@@ -410,12 +440,16 @@ public class LevelModel {
 		for(LightSource light : lights) {
 			light.attachToBody(avatar.getBody(), light.getX(), light.getY(), light.getDirection());
 		}
-		if (lights.size > 0) {
-			activeLight = 0;
-			lights.get(0).setActive(true);
-		} else {
-			activeLight = -1;
-		}
+		// This code dims the map
+//		if (lights.size > 0) {
+//			activeLight = 0;
+//			lights.get(0).setActive(true);
+//		} else {
+//			activeLight = -1;
+//		}
+		activeLight = -1;
+		// END REMOVE
+
 	}
 	
 	/**

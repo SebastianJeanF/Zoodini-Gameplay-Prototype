@@ -5,7 +5,7 @@
 			"wrapU": "repeated",
 			"wrapV": "repeated"
     	},
-    	"dude": {      
+    	"gar": {
     		"file": 	"textures/walking.png",
     		"wrap":  	false,
     		"sprites":	{
@@ -16,6 +16,17 @@
 				}
     		}
     	},
+		"otto": {
+			"file": 	"textures/walking2.png",
+			"wrap":  	false,
+			"sprites":	{
+				"walking" : {
+					"size" : 4,
+					"rows" : 1,
+					"cols" : 4
+				}
+			}
+		},
         "goal": "textures/helicopter.png"
   	},
   	"fonts": {
