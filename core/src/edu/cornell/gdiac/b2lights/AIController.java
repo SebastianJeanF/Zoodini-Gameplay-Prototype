@@ -21,13 +21,7 @@ public class AIController {
     /** Guard controlled by this AI controller */
     private Guard guard;
     /** Target of the guard (to chase) */
-    private Player target; // Maybe add player class (so guard can detect both Otto and Gar)
-
-    /** Size of each grid cell in world units*/
-    private static final float GRID_CELL_SIZE = 32.0f;
-    /** Grid representing the map */
-    private boolean[][] grid;
-    private int gridWidth, gridHeight;
+    private DudeModel target; // Maybe add player class (so guard can detect both Otto and Gar)
 
     /** Current state of the finite state machine */
     private FSMState state;

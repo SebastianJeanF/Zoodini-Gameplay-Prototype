@@ -346,6 +346,10 @@ public class LevelModel {
 		guard.initialize(directory, guardData);
 		guard.setDrawScale(scale);
 		activate(guard);
+
+		// Create the grid
+		Grid grid = new Grid(this, 1.0f);
+		grid.printGrid();
 	}
 	
 	/**
