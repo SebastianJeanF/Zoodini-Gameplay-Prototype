@@ -64,6 +64,9 @@ public class LevelModel {
 	/** Reference to the AFK avatar*/
 	private DudeModel avatarAFK;
 
+	/** Reference to the guard */
+	private Guard guard;
+
 	/** Reference to the goalDoor (for collision detection) */
 	private ExitModel goalDoor;
 
@@ -158,6 +161,11 @@ public class LevelModel {
 	 */
 	public DudeModel getAvatarAFK() {
 		return avatarAFK;
+	}
+
+
+	public Guard getGuard(){
+		return guard;
 	}
 
 
@@ -328,6 +336,14 @@ public class LevelModel {
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
 		attachLights(avatarAFK);
+
+		// Create Guard
+		guard = new Guard("Guard");
+		JsonValue guardData = levelFormat.get("guard");
+		guard.initialize(directory, guardData);
+		guard.setDrawScale(scale);
+		activate(guard);
+		attachLights(guard);
 	}
 	
 	/**
