@@ -255,8 +255,10 @@ public class LevelModel {
 		DudeModel temp = avatar;
 		avatar = avatarAFK;
 		avatarAFK = temp;
+//		for(LightSource light : lights){
+//			light.setDirection(avatar.getAngle());
+//		}
 		attachLights(avatar);
-		attachLights(avatarAFK);
 	}
 
 	/**
@@ -317,17 +319,16 @@ public class LevelModel {
 		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
 	    avatar.setDrawScale(scale);
-		activate(avatar);
-		attachLights(avatar);
+	    activate(avatar);
+	    attachLights(avatar);
 
 
 		// Create the dude and attach light sources
-		avdata = levelFormat.get("avatarOtto");
 		avatarAFK = new DudeModel("Otto");
+		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
-		attachLights(avatarAFK);
 	}
 	
 	/**
@@ -437,8 +438,9 @@ public class LevelModel {
 	 * The activeLight is set to be the first element of lights, assuming it is not empty.
 	 */
 	public void attachLights(DudeModel avatar) {
+
 		for(LightSource light : lights) {
-			light.attachToBody(avatar.getBody(), light.getX(), light.getY(), light.getDirection());
+			light.attachToBody(avatar.getBody(), 0, 0, 90f);
 		}
 		// This code dims the map
 //		if (lights.size > 0) {
@@ -447,7 +449,6 @@ public class LevelModel {
 //		} else {
 //			activeLight = -1;
 //		}
-		activeLight = -1;
 		// END REMOVE
 
 	}
