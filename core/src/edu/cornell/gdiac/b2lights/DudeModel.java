@@ -64,11 +64,15 @@ public class DudeModel extends WheelObstacle {
 
 	// Sebastian: NEW CODE
 	/** Player types **/
-	enum Player {GAR, OTTO}
+	public enum Player {GAR, OTTO}
 
 	/** The type of player the DudeModel is **/
 	private Player playerType;
 	// END
+
+	public Player getPlayerType() {
+		return playerType;
+	}
 
 	/**
 	 * Returns the directional movement of this character.
@@ -345,7 +349,7 @@ public class DudeModel extends WheelObstacle {
 
 		// Animate if necessary
 		if (animate && walkCool == 0) {
-			System.out.print("Updating filmstrip for player " + playerType + "\n");
+			// System.out.print("Updating filmstrip for player " + playerType + "\n");
 			if (filmstrip != null) {
 				int next = (filmstrip.getFrame()+1) % filmstrip.getSize();
 				filmstrip.setFrame(next);

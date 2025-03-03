@@ -290,7 +290,18 @@ public class GameController implements Screen, ContactListener {
 //		} else if (input.didBack()){
 //			level.activatePrevLight();
 //		}
-		
+
+		if (input.isAbilityPressed()) {
+			switch (avatar.getPlayerType()) {
+				case GAR:
+					((Gar) avatar).setMeowed(true);
+					break;
+				default:
+					break;
+			}
+		}
+
+
 		// Rotate the avatar to face the direction of movement
 		angleCache.set(input.getHorizontal(),input.getVertical());
 		if (angleCache.len2() > 0.0f) {
@@ -302,6 +313,18 @@ public class GameController implements Screen, ContactListener {
 		angleCache.scl(avatar.getForce());
 		avatar.setMovement(angleCache.x,angleCache.y);
 		avatar.applyForce();
+
+		switch (avatar.getPlayerType()) {
+			case GAR:
+				Gar gar = (Gar) avatar;
+				if (gar.getMeowed() == true) {
+					// code for updating the nearest guard goes here
+					System.out.println("Gar meowed a guard to his location");
+					gar.setMeowed(false);
+				}
+			default:
+				break;
+		}
 
 		// Stops afk avatar from moving, if he got hit by the main avatar
 		DudeModel afkAvatar = level.getAvatarAFK();

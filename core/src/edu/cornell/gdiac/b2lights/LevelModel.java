@@ -313,8 +313,8 @@ public class LevelModel {
 	    }
 
 		// Create the dude and attach light sources
-	    avatar = new DudeModel("Gar");
-	    JsonValue avdata = levelFormat.get("avatarGar");
+	    avatar = new Gar();
+		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
 	    avatar.setDrawScale(scale);
 		activate(avatar);

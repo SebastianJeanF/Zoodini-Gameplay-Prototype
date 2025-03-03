@@ -20,17 +20,19 @@ import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.XBoxController;
 
 /**
- * Class for reading player input. 
+ * Class for reading player input.
  *
- * This supports both a keyboard and X-Box controller. In previous solutions, we only 
- * detected the X-Box controller on start-up.  This class allows us to hot-swap in
+ * This supports both a keyboard and X-Box controller. In previous solutions, we
+ * only
+ * detected the X-Box controller on start-up. This class allows us to hot-swap
+ * in
  * a controller via the new XBox360Controller class.
  */
 public class InputController {
 	/** The singleton instance of the input controller */
 	private static InputController theController = null;
-	
-	/** 
+
+	/**
 	 * Return the singleton instance of the input controller
 	 *
 	 * @return the singleton instance of the input controller
@@ -41,7 +43,7 @@ public class InputController {
 		}
 		return theController;
 	}
-	
+
 	// Fields to manage buttons
 	/** Whether the reset button was pressed. */
 	private boolean resetPressed;
@@ -61,32 +63,35 @@ public class InputController {
 	/** Whether the swap button was pressed. */
 	private boolean swapPressed;
 	private boolean swapPrevious;
-	
+
 	/** How much did we move horizontally? */
 	private float horizontal;
 	/** How much did we move vertically? */
 	private float vertical;
-	
+
+	/** Was the ability button pressed? */
+	private boolean abilityPressed;
+
 	/** An X-Box controller (if it is connected) */
 	XBoxController xbox;
-	
+
 	/**
-	 * Returns the amount of sideways movement. 
+	 * Returns the amount of sideways movement.
 	 *
 	 * -1 = left, 1 = right, 0 = still
 	 *
-	 * @return the amount of sideways movement. 
+	 * @return the amount of sideways movement.
 	 */
 	public float getHorizontal() {
 		return horizontal;
 	}
-	
+
 	/**
-	 * Returns the amount of vertical movement. 
+	 * Returns the amount of vertical movement.
 	 *
 	 * -1 = down, 1 = up, 0 = still
 	 *
-	 * @return the amount of vertical movement. 
+	 * @return the amount of vertical movement.
 	 */
 	public float getVertical() {
 		return vertical;
@@ -109,7 +114,7 @@ public class InputController {
 	public boolean didForward() {
 		return nextPressed && !nextPrevious;
 	}
-	
+
 	/**
 	 * Returns true if the player wants to go to the previous level.
 	 *
@@ -118,7 +123,7 @@ public class InputController {
 	public boolean didBack() {
 		return prevPressed && !prevPrevious;
 	}
-	
+
 	/**
 	 * Returns true if the player wants to go toggle the debug mode.
 	 *
@@ -127,7 +132,7 @@ public class InputController {
 	public boolean didDebug() {
 		return debugPressed && !debugPrevious;
 	}
-	
+
 	/**
 	 * Returns true if the exit button was pressed.
 	 *
@@ -145,18 +150,22 @@ public class InputController {
 	public boolean didSwap() {
 		return swapPressed && !swapPrevious;
 	}
-	
+
+	public boolean isAbilityPressed() {
+		return abilityPressed;
+	}
+
 	/**
 	 * Creates a new input controller
 	 * 
 	 * The input controller attempts to connect to the X-Box controller at device 0,
-	 * if it exists.  Otherwise, it falls back to the keyboard control.
+	 * if it exists. Otherwise, it falls back to the keyboard control.
 	 */
 	public InputController() {
 		// If we have a game-pad for id, then use it.
 		Array<XBoxController> controllers = Controllers.get().getXBoxControllers();
 		if (controllers.size > 0) {
-			xbox = controllers.get( 0 );
+			xbox = controllers.get(0);
 		} else {
 			xbox = null;
 		}
@@ -168,8 +177,8 @@ public class InputController {
 	public void readInput() {
 		// Copy state from last animation frame
 		// Helps us ignore buttons that are held down
-		resetPrevious  = resetPressed;
-		debugPrevious  = debugPressed;
+		resetPrevious = resetPressed;
+		debugPrevious = debugPressed;
 		exitPrevious = exitPressed;
 		nextPrevious = nextPressed;
 		prevPrevious = prevPressed;
@@ -182,35 +191,35 @@ public class InputController {
 		} else {
 			readKeyboard(false);
 		}
-}
+	}
 
 	/**
 	 * Reads input from an X-Box controller connected to this computer.
 	 *
-	 * The method provides both the input bounds and the drawing scale.  It needs
-	 * the drawing scale to convert screen coordinates to world coordinates.  The
-	 * bounds are for the crosshair.  They cannot go outside of this zone.
+	 * The method provides both the input bounds and the drawing scale. It needs
+	 * the drawing scale to convert screen coordinates to world coordinates. The
+	 * bounds are for the crosshair. They cannot go outside of this zone.
 	 *
-	 * @param bounds The input bounds for the crosshair.  
+	 * @param bounds The input bounds for the crosshair.
 	 * @param scale  The drawing scale
 	 */
 	private void readGamepad() {
 		resetPressed = xbox.getStart();
-		exitPressed  = xbox.getBack();
-		nextPressed  = xbox.getRBumper();
-		prevPressed  = xbox.getLBumper();
-		debugPressed  = xbox.getY();
+		exitPressed = xbox.getBack();
+		nextPressed = xbox.getRBumper();
+		prevPressed = xbox.getLBumper();
+		debugPressed = xbox.getY();
 
 		// Increase animation frame, but only if trying to move
 		horizontal = xbox.getLeftX();
-		vertical   = xbox.getLeftY();
+		vertical = xbox.getLeftY();
 	}
 
 	/**
 	 * Reads input from the keyboard.
 	 *
 	 * This controller reads from the keyboard regardless of whether or not an X-Box
-	 * controller is connected.  However, if a controller is connected, this method
+	 * controller is connected. However, if a controller is connected, this method
 	 * gives priority to the X-Box controller.
 	 *
 	 * @param secondary true if the keyboard should give priority to a gamepad
@@ -218,11 +227,13 @@ public class InputController {
 	private void readKeyboard(boolean secondary) {
 		// Give priority to gamepad results
 		resetPressed = (secondary && resetPressed) || (Gdx.input.isKeyPressed(Input.Keys.R));
-//		debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.D));
+		// debugPressed = (secondary && debugPressed) ||
+		// (Gdx.input.isKeyPressed(Input.Keys.D));
 		prevPressed = (secondary && prevPressed) || (Gdx.input.isKeyPressed(Input.Keys.P));
 		nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
-		exitPressed  = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
+		exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
 		swapPressed = (secondary && swapPressed) || (Gdx.input.isKeyPressed(Input.Keys.SPACE));
+		abilityPressed = (secondary && swapPressed) || (Gdx.input.isKeyPressed(Input.Keys.E));
 
 		// Directional controls
 		horizontal = (secondary ? horizontal : 0.0f);
@@ -232,7 +243,7 @@ public class InputController {
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			horizontal -= 1.0f;
 		}
-		
+
 		vertical = (secondary ? vertical : 0.0f);
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			vertical += 1.0f;
