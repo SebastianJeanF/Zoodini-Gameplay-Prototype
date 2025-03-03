@@ -227,9 +227,9 @@ public class DudeModel extends WheelObstacle {
 		else if (type.equals("Otto")) {
 			playerType = Player.OTTO;
 		}
-		else {
-			throw new IllegalArgumentException("Invalid player type");
-		}
+//		else {
+//			throw new IllegalArgumentException("Invalid player type");
+//		}
 
 	}
 

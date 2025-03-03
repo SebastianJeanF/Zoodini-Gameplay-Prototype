@@ -307,6 +307,9 @@ public class GameController implements Screen, ContactListener {
 		DudeModel afkAvatar = level.getAvatarAFK();
 		afkAvatar.applyForce();
 
+		Guard guard = level.getGuard();
+		guard.applyForce();
+
 		// Turn the physics engine crank.
 		level.update(dt);
 	}
