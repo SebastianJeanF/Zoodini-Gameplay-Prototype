@@ -301,6 +301,17 @@ public class GameController implements Screen, ContactListener {
 			}
 		}
 
+		// Test program to move avatar autonomously
+//		DudeModel avatar = level.getAvatar();
+//		Vector2 avatarPosition = avatar.getPosition();
+//		DudeModel afkAvatar = level.getAvatarAFK();
+//		Vector2 avatarAFKPosition = afkAvatar.getPosition();
+//
+//		// Have AFK avatar follow the main avatar
+//
+//		final float SPEED = 10.0f;
+//		afkAvatar.setMovement((avatarPosition.x - avatarAFKPosition.x)*SPEED, (avatarPosition.y - avatarAFKPosition.y)*SPEED);
+
 
 		// Rotate the avatar to face the direction of movement
 		angleCache.set(input.getHorizontal(),input.getVertical());

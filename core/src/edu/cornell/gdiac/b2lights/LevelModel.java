@@ -92,6 +92,10 @@ public class LevelModel {
 	/** All of the active lights that we loaded from the JSON file */
 	private Array<LightSource> lights = new Array<LightSource>();
 
+
+	/** Reference to the security camera */
+	private SecurityCamera securityCamera;
+
 	/** The current light source being used.  If -1, there are no shadows */
 	private int activeLight;
 
@@ -250,6 +254,8 @@ public class LevelModel {
 		minFPS = value;
 	}
 
+
+
 	/**
 	 * Creates a new LevelModel
 	 * 
@@ -350,6 +356,16 @@ public class LevelModel {
 		guard.setDrawScale(scale);
 		activate(guard);
 		attachGuardLights(guard);
+
+		// Create Camera
+		SecurityCamera camera = new SecurityCamera("SecurityCamera");
+		JsonValue camdata = levelFormat.get("securityCamera");
+//		float[] pos = camdata.get("pos").asFloatArray();
+//		float[] size = camdata.get("size").asFloatArray();
+		camera.initialize(directory, camdata);
+		camera.setDrawScale(scale);
+		activate(camera);
+		attachLights(camera);
 	}
 	
 	/**
