@@ -363,6 +363,10 @@ public class LevelModel {
 		camera.setDrawScale(scale);
 		activate(camera);
 		attachLights(camera);
+
+		// Create the grid
+		Grid grid = new Grid(this, 1.0f);
+		grid.printGrid();
 	}
 	
 	/**
