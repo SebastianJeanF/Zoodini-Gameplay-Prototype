@@ -273,9 +273,6 @@ public class LevelModel {
 		DudeModel temp = avatar;
 		avatar = avatarAFK;
 		avatarAFK = temp;
-//		for(LightSource light : lights){
-//			light.setDirection(avatar.getAngle());
-//		}
 		attachLights(avatar);
 	}
 
@@ -493,7 +490,7 @@ public class LevelModel {
 		// This code dims the map
 		if(activeLight == 0) {
 			if (lights.size > 0) {
-                lights.get(0).setActive(true);
+                		lights.get(0).setActive(true);
 			} else {
 				activeLight = -1;
 			}
@@ -515,6 +512,8 @@ public class LevelModel {
 		}
 		// END REMOVE
 	}
+
+
 	
 	/**
 	 * Activates the next light in the light list.
@@ -562,8 +561,13 @@ public class LevelModel {
 		for(LightSource light : lights) {
 			light.remove();
 		}
+		for(LightSource light : guardLights){
+			light.remove();
+		}
+
 		lights.clear();
-		
+		guardLights.clear();
+
 		if (rayhandler != null) {
 			rayhandler.dispose();
 			rayhandler = null;
