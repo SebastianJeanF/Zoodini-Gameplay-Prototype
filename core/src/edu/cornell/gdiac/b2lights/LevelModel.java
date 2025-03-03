@@ -40,7 +40,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.lights.*;
 import edu.cornell.gdiac.physics.obstacle.*;
-import java.security.Guard;
+import edu.cornell.gdiac.b2lights.Guard;
 
 /**
  * Represents a single level in our game
@@ -165,7 +165,7 @@ public class LevelModel {
 	}
 
 
-	public Guard getGuard(){
+	public edu.cornell.gdiac.b2lights.Guard getGuard(){
 		return guard;
 	}
 

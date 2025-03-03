@@ -25,7 +25,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
-
+import edu.cornell.gdiac.b2lights.Guard;
 import edu.cornell.gdiac.physics.obstacle.*;
 
 /**
