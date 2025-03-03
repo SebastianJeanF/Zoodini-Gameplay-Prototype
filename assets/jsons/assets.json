@@ -27,6 +27,17 @@
 				}
 			}
 		},
+		"guard": {
+			"file": 	"textures/guardWalking.png",
+			"wrap":  	false,
+			"sprites":	{
+				"walking" : {
+					"size" : 4,
+					"rows" : 1,
+					"cols" : 4
+				}
+			}
+		},
         "goal": "textures/helicopter.png"
   	},
   	"fonts": {

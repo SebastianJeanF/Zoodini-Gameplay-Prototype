@@ -40,6 +40,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.lights.*;
 import edu.cornell.gdiac.physics.obstacle.*;
+import java.security.Guard;
 
 /**
  * Represents a single level in our game
@@ -63,6 +64,9 @@ public class LevelModel {
 	private DudeModel avatar;
 	/** Reference to the AFK avatar*/
 	private DudeModel avatarAFK;
+
+	/** Reference to the guard */
+	private Guard guard;
 
 	/** Reference to the goalDoor (for collision detection) */
 	private ExitModel goalDoor;
@@ -158,6 +162,11 @@ public class LevelModel {
 	 */
 	public DudeModel getAvatarAFK() {
 		return avatarAFK;
+	}
+
+
+	public Guard getGuard(){
+		return guard;
 	}
 
 
@@ -329,6 +338,14 @@ public class LevelModel {
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
+		attachLights(avatarAFK);
+
+		// Create Guard
+		guard = new Guard("Guard");
+		JsonValue guardData = levelFormat.get("guard");
+		guard.initialize(directory, guardData);
+		guard.setDrawScale(scale);
+		activate(guard);
 	}
 	
 	/**
