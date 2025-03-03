@@ -455,19 +455,19 @@ public class LevelModel {
 	 * The activeLight is set to be the first element of lights, assuming it is not empty.
 	 */
 	public void attachLights(DudeModel avatar) {
-
 		for(LightSource light : lights) {
 			light.attachToBody(avatar.getBody(), 0, 0, 90f);
 		}
 		// This code dims the map
-//		if (lights.size > 0) {
-//			activeLight = 0;
-//			lights.get(0).setActive(true);
-//		} else {
-//			activeLight = -1;
-//		}
+		if(activeLight == 0) {
+			if (lights.size > 0) {
+				activeLight = 0;
+				lights.get(0).setActive(true);
+			} else {
+				activeLight = -1;
+			}
+		}
 		// END REMOVE
-
 	}
 	
 	/**
