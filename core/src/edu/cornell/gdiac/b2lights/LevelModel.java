@@ -91,9 +91,12 @@ public class LevelModel {
 	protected RayHandler rayhandler;
 	/** All of the active lights that we loaded from the JSON file */
 	private Array<LightSource> lights = new Array<LightSource>();
+
 	/** The current light source being used.  If -1, there are no shadows */
 	private int activeLight;
-	
+
+	private Array<LightSource> guardLights = new Array<LightSource>();
+	private int activeGuardLight;
 	// TO FIX THE TIMESTEP
 	/** The maximum frames per second setting for this level */
 	protected int maxFPS;
@@ -346,6 +349,7 @@ public class LevelModel {
 		guard.initialize(directory, guardData);
 		guard.setDrawScale(scale);
 		activate(guard);
+		attachGuardLights(guard);
 	}
 	
 	/**
@@ -440,10 +444,14 @@ public class LevelModel {
 			cone.setContactFilter(f);
 			cone.setActive(false); // TURN ON LATER
 			lights.add(cone);
+
+			guardLights.add(cone);
+
 	        light = light.next();
 	    }
 	}
-	
+
+
 	/**
 	 * Attaches all lights to the avatar.
 	 * 
@@ -461,10 +469,24 @@ public class LevelModel {
 		// This code dims the map
 		if(activeLight == 0) {
 			if (lights.size > 0) {
-				activeLight = 0;
-				lights.get(0).setActive(true);
+                lights.get(0).setActive(true);
 			} else {
 				activeLight = -1;
+			}
+		}
+		// END REMOVE
+	}
+
+	public void attachGuardLights(Guard guard) {
+		for(LightSource light : guardLights) {
+			light.attachToBody(guard.getBody(), 0, 0, 90f);
+		}
+		// This code dims the map
+		if(activeGuardLight == 0) {
+			if (guardLights.size > 0) {
+				guardLights.get(0).setActive(true);
+			} else {
+				activeGuardLight = -1;
 			}
 		}
 		// END REMOVE
