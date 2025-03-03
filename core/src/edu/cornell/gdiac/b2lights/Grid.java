@@ -8,6 +8,10 @@ import edu.cornell.gdiac.physics.obstacle.*;
  */
 public class Grid {
 
+    /**
+     * The internal tile state.
+     * Each tile on the board has a set of attributes associated with it.
+     */
     private static class TileState {
         /** Whether the tile has been visited (for pathfinding) */
         public boolean visited = false;
@@ -101,14 +105,27 @@ public class Grid {
         }
     }
 
+    /**
+     * Gets the width of the grid in cells
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Gets the height of the grid in cells
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Gets the tile state at the specified grid coordinates
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return The tile state or null if out of bounds
+     */
     private TileState getTileState(int x, int y) {
         if (!inBounds(x, y)) {
             return null;
@@ -116,31 +133,64 @@ public class Grid {
         return grid[x][y];
     }
 
+    /**
+     * Checks if the specified grid cell is a wall
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return True if the cell is a wall, false otherwise
+     */
     public boolean isWall(int x, int y) {
         return grid[x][y].wall;
     }
 
+    /**
+     * Checks if the specified grid cell has been visited during pathfinding
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return True if the cell has been visited, false otherwise
+     */
     public boolean isVisited(int x, int y) {
         return grid[x][y].visited;
     }
 
-    public int screenToBoard(float f) {
-        return (int)(f / (tileSize));
+    /**
+     * Converts screen coordinates to grid coordinates
+     *
+     * @param screenY The y coordinate in screen space
+     * @return The corresponding y coordinate in grid space
+     */
+    public int screenToGridY(float screenY) {
+        float physicsY = screenY / scale.y;
+        return physicsToGridY(physicsY);
     }
 
-    public float boardToScreen(int n) {
-        return (float) (n + 0.5f) * (tileSize);
-    }
-
+    /**
+     * Checks if grid coordinates are within bounds
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return True if the coordinates are within the grid bounds
+     */
     public boolean inBounds(int x, int y) {
         return x >= 0 && y >= 0 && x < width && y < height;
     }
 
+    /**
+     * Checks if the specified grid cell is a goal for pathfinding
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return True if the cell is a goal, false otherwise
+     */
     public boolean isGoal(int x, int y) {
         return grid[x][y].goal;
     }
 
-
+    /**
+     * Clears all visited marks and goals for pathfinding
+     */
     public void clearMarks() {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
