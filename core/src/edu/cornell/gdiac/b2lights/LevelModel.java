@@ -338,7 +338,7 @@ public class LevelModel {
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
-		attachLights(avatarAFK);
+		//attachLights(avatarAFK);
 
 		// Create Guard
 		guard = new Guard("Guard");
