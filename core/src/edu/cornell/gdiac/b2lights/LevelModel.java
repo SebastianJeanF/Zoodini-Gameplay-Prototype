@@ -91,9 +91,16 @@ public class LevelModel {
 	protected RayHandler rayhandler;
 	/** All of the active lights that we loaded from the JSON file */
 	private Array<LightSource> lights = new Array<LightSource>();
+
+
+	/** Reference to the security camera */
+	private SecurityCamera securityCamera;
+
 	/** The current light source being used.  If -1, there are no shadows */
 	private int activeLight;
-	
+
+	private Array<LightSource> guardLights = new Array<LightSource>();
+	private int activeGuardLight;
 	// TO FIX THE TIMESTEP
 	/** The maximum frames per second setting for this level */
 	protected int maxFPS;
@@ -247,6 +254,8 @@ public class LevelModel {
 		minFPS = value;
 	}
 
+
+
 	/**
 	 * Creates a new LevelModel
 	 * 
@@ -264,9 +273,6 @@ public class LevelModel {
 		DudeModel temp = avatar;
 		avatar = avatarAFK;
 		avatarAFK = temp;
-//		for(LightSource light : lights){
-//			light.setDirection(avatar.getAngle());
-//		}
 		attachLights(avatar);
 	}
 
@@ -338,7 +344,7 @@ public class LevelModel {
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
-		attachLights(avatarAFK);
+		//attachLights(avatarAFK);
 
 		// Create Guard
 		guard = new Guard("Guard");
@@ -346,6 +352,17 @@ public class LevelModel {
 		guard.initialize(directory, guardData);
 		guard.setDrawScale(scale);
 		activate(guard);
+		attachGuardLights(guard);
+
+		// Create Camera
+		SecurityCamera camera = new SecurityCamera("SecurityCamera");
+		JsonValue camdata = levelFormat.get("securityCamera");
+//		float[] pos = camdata.get("pos").asFloatArray();
+//		float[] size = camdata.get("size").asFloatArray();
+		camera.initialize(directory, camdata);
+		camera.setDrawScale(scale);
+		activate(camera);
+		attachLights(camera);
 
 		// Create the grid
 		Grid grid = new Grid(this, 1.0f);
@@ -444,10 +461,22 @@ public class LevelModel {
 			cone.setContactFilter(f);
 			cone.setActive(false); // TURN ON LATER
 			lights.add(cone);
+
+			ConeSource guardCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
+			guardCone.setColor(color[0],color[1],color[2],color[3]);
+			guardCone.setSoft(light.getBoolean("soft"));
+			guardCone.setContactFilter(f);
+			guardCone.setActive(false); // TURN ON LATER
+
+			guardLights.add(guardCone);
+
 	        light = light.next();
 	    }
 	}
-	
+
+
+
+
 	/**
 	 * Attaches all lights to the avatar.
 	 * 
@@ -459,20 +488,36 @@ public class LevelModel {
 	 * The activeLight is set to be the first element of lights, assuming it is not empty.
 	 */
 	public void attachLights(DudeModel avatar) {
-
 		for(LightSource light : lights) {
 			light.attachToBody(avatar.getBody(), 0, 0, 90f);
 		}
 		// This code dims the map
-//		if (lights.size > 0) {
-//			activeLight = 0;
-//			lights.get(0).setActive(true);
-//		} else {
-//			activeLight = -1;
-//		}
+		if(activeLight == 0) {
+			if (lights.size > 0) {
+                		lights.get(0).setActive(true);
+			} else {
+				activeLight = -1;
+			}
+		}
 		// END REMOVE
-
 	}
+
+	public void attachGuardLights(Guard guard) {
+		for(LightSource light : guardLights) {
+			light.attachToBody(guard.getBody(), 0, 0, 90f);
+		}
+		// This code dims the map
+		if(activeGuardLight == 0) {
+			if (guardLights.size > 0) {
+				guardLights.get(0).setActive(true);
+			} else {
+				activeGuardLight = -1;
+			}
+		}
+		// END REMOVE
+	}
+
+
 	
 	/**
 	 * Activates the next light in the light list.
@@ -520,8 +565,13 @@ public class LevelModel {
 		for(LightSource light : lights) {
 			light.remove();
 		}
+		for(LightSource light : guardLights){
+			light.remove();
+		}
+
 		lights.clear();
-		
+		guardLights.clear();
+
 		if (rayhandler != null) {
 			rayhandler.dispose();
 			rayhandler = null;
