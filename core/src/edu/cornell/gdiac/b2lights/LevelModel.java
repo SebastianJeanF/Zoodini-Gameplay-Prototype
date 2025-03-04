@@ -468,10 +468,14 @@ public class LevelModel {
 			cone.setActive(false); // TURN ON LATER
 			lights.add(cone);
 
+
 			ConeSource guardCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
 			guardCone.setColor(color[0],color[1],color[2],color[3]);
 			guardCone.setSoft(light.getBoolean("soft"));
-			guardCone.setContactFilter(f);
+
+		    	Filter f2 = new Filter();
+		    	f2.maskBits = bitStringToComplement("0010");
+			guardCone.setContactFilter(f2);
 			guardCone.setActive(false); // TURN ON LATER
 
 			guardLights.add(guardCone);
