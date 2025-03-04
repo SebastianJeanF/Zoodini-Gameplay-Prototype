@@ -122,6 +122,8 @@ public class LevelModel {
 	private float securityCamLightDistance;
 	private float securityCamConeAngle;
 
+	private Grid grid;
+
 	/**
 	 * Returns the bounding rectangle for the physics world
 	 * 
@@ -277,6 +279,10 @@ public class LevelModel {
 		minFPS = value;
 	}
 
+	public Grid getGrid() {
+		return grid;
+	}
+
 
 
 	/**
@@ -393,10 +399,10 @@ public class LevelModel {
 
 		createAndAttachGuardLights(levelFormat.get("securitylights"));
 
-		// Create the grid
-		Grid grid = new Grid(this, 2.0f);
+		grid = new Grid(this, 2.0f);
 		grid.printGrid();
 	}
+
 	
 	/**
 	 * Creates the ambient lighting for the level

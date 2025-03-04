@@ -13,7 +13,7 @@ public class GameSession {
      *
      * @params assets   The associated asset directory
      */
-    public GameSession(AssetDirectory assets) {
+    public GameSession() {
         reset();
     }
 

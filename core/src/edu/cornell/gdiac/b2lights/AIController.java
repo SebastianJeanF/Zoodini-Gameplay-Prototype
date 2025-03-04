@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.b2lights;
 
 import com.badlogic.gdx.utils.Queue;
+import com.badlogic.gdx.math.Vector2;
 
 public class AIController {
     /**
@@ -18,7 +19,7 @@ public class AIController {
         DISTRACTED
     }
 
-    private static enum Movement {
+    public static enum Movement {
         /** Guard is moving right */
         RIGHT,
         /** Guard is moving up */
@@ -40,7 +41,9 @@ public class AIController {
     /** Current state of the finite state machine */
     private FSMState state;
     /** The state of the game (needed by the AI) */
-    private GameSession session;
+    // private GameSession session;
+    /** The state of the game (needed by the AI) */
+    private Grid grid;
 
 
     /**
@@ -48,12 +51,14 @@ public class AIController {
      *
      * @param id The unique ship identifier
      * @param session The current game session
+     * @param grid The current game session grid
      */
-    public AIController(int id, GameSession session) {
+    public AIController(Guard guard, Grid grid) {
         this.id = id;
         this.state = FSMState.NEUTRAL;
         this.target = null;
-        this.session = session;
+        this.grid = grid;
+        this.guard = guard;
     }
 
     /**
@@ -62,14 +67,29 @@ public class AIController {
      * @param targetX x-coordinate of the goal tile (in screen coordinates)
      * @param targetY y-coordinate of the goal tile (in screen coordinates)
      */
-    private void selectTarget(float targetX, float targetY) {
+    public void selectTarget(float targetX, float targetY) {
         // Convert screen coordinates to grid coordinates
-        Grid grid = session.getGrid();
+        // Grid grid = session.getGrid();
         int targetGridX = grid.screenToGridX(targetX);
         int targetGridY = grid.screenToGridY(targetY);
         // Mark the goal tile on the grid
         grid.setGoal(targetGridX, targetGridY);
     }
+
+
+    /**
+     * Converts the discrete Movement enum to a continuous movement vector
+     */
+    public Vector2 movementToVector(Movement movement) {
+        switch (movement) {
+            case RIGHT: return new Vector2(1, 0);
+            case UP: return new Vector2(0, 1);
+            case LEFT: return new Vector2(-1, 0);
+            case DOWN: return new Vector2(0, -1);
+            default: return new Vector2(0, 0); // NO_ACTION
+        }
+    }
+
 
     /**
      * Returns a movement direction that moves towards a goal tile.
@@ -79,8 +99,9 @@ public class AIController {
      *
      * @return a movement direction that moves towards a goal tile
      */
-    private int getMoveAlongPathToGoalTile() {
-        Grid grid = session.getGrid();
+    public int getMoveAlongPathToGoalTile() {
+        // Grid grid = session.getGrid();
+        System.out.println("here");
 
         Queue<int[]> queue = new Queue<>();
         int startX = grid.screenToGridX(guard.getX());

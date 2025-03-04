@@ -24,6 +24,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.b2lights.AIController.Movement;
 import edu.cornell.gdiac.physics.lights.ConeSource;
 import edu.cornell.gdiac.physics.lights.LightSource;
 import edu.cornell.gdiac.util.*;
@@ -75,12 +76,16 @@ public class GameController implements Screen, ContactListener {
 	private boolean garAtDoor = false;
 	private boolean ottoAtDoor = false;
 
+	private AIController[] controls = new AIController[1];
 
 	// --- Patrol Path Variables for Guard ---
 	private Vector2[] patrolPoints;
 	private int currentPatrolIndex = 0;
 	private static final float PATROL_THRESHOLD = 0.5f; // Distance to switch patrol points
 
+	private float pathUpdateTimer = 0f;
+	private static final float PATH_UPDATE_INTERVAL = 0.5f;
+	private Movement currentGuardMovement = Movement.NO_ACTION; // From your enum
 
 
 
@@ -200,6 +205,7 @@ public class GameController implements Screen, ContactListener {
 
 		};
 		currentPatrolIndex = 0;
+
 	}
 	
 	/**
@@ -244,6 +250,8 @@ public class GameController implements Screen, ContactListener {
 		// Reload the json each time
 		level.populate(directory, levelFormat);
 		level.getWorld().setContactListener(this);
+		level.getGrid().printGrid();
+		controls[0] = new AIController(level.getGuard(), level.getGrid());
 	}
 	
 	/**
@@ -301,22 +309,94 @@ public class GameController implements Screen, ContactListener {
 
 
 
-	void moveGuard(Vector2 targetPos) {
+//	void moveGuard(Vector2 targetPos) {
+//		Guard guard = level.getGuard();
+//		Vector2 guardPos = guard.getPosition();
+//		Vector2 direction = new Vector2(targetPos).sub(guardPos);
+//		if (direction.len() > 0) {
+//			direction.nor().scl(guard.getForce());
+//			guard.setMovement(direction.x, direction.y);
+//			// Update guard orientation to face the target.
+//			guard.setAngle(direction.angleRad());
+//		}
+//
+//		// Update the guard's orientation to face the direction of movement.
+//		Vector2 movement = guard.getMovement();
+//		if (movement.len2() > 0.0001f) {  // Only update if there is significant movement
+//			guard.setAngle(movement.angleRad() - (float)Math.PI/2);
+//		}
+//	}
+
+	/**
+	 * Updates guard movement based on AI controller's pathfinding
+	 * Call this from update()
+	 */
+	private void updateGuardAI(float dt) {
 		Guard guard = level.getGuard();
-		Vector2 guardPos = guard.getPosition();
-		Vector2 direction = new Vector2(targetPos).sub(guardPos);
-		if (direction.len() > 0) {
-			direction.nor().scl(guard.getForce());
-			guard.setMovement(direction.x, direction.y);
-			// Update guard orientation to face the target.
-			guard.setAngle(direction.angleRad());
+
+		// Update the path periodically, not every frame
+		pathUpdateTimer -= dt;
+		if (pathUpdateTimer <= 0) {
+			pathUpdateTimer = PATH_UPDATE_INTERVAL;
+
+			// Update target based on guard state
+			if (guard.isAgroed()) {
+				// Use BFS to find path to the target
+				Vector2 targetPos = guard.getTarget();
+				controls[0].selectTarget(targetPos.x, targetPos.y);
+				level.getGrid().clearMarks(); // Clear previous pathfinding data
+				int movementCode = controls[0].getMoveAlongPathToGoalTile();
+				currentGuardMovement = Movement.values()[movementCode];
+			} else if (patrolPoints != null && patrolPoints.length > 0) {
+				// Patrol behavior - find path to the next patrol point
+				Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
+				controls[0].selectTarget(patrolTarget.x, patrolTarget.y);
+				level.getGrid().clearMarks(); // Clear previous pathfinding data
+				int movementCode = controls[0].getMoveAlongPathToGoalTile();
+				currentGuardMovement = Movement.values()[movementCode];
+			}
 		}
 
-		// Update the guard's orientation to face the direction of movement.
-		Vector2 movement = guard.getMovement();
-		if (movement.len2() > 0.0001f) {  // Only update if there is significant movement
-			guard.setAngle(movement.angleRad() - (float)Math.PI/2);
+		// Convert discrete movement to continuous vector
+		Vector2 movementVector = controls[0].movementToVector(currentGuardMovement);
+
+		// Apply movement to guard with proper scaling
+		if (movementVector.len2() > 0) {
+			movementVector.nor().scl(guard.getForce());
+			guard.setMovement(movementVector.x, movementVector.y);
+
+			// Update guard orientation to face movement direction
+			float angle = movementVector.angleRad() - (float)Math.PI/2;
+			guard.setAngle(angle);
+		} else {
+			// No movement
+			guard.setMovement(0, 0);
 		}
+	}
+
+	// Modified moveGuard method that uses the AI controller
+	void moveGuard(Vector2 targetPos) {
+		Guard guard = level.getGuard();
+
+		if (guard.isAgroed()) {
+			// For chasing behavior, update the target position
+			controls[0].selectTarget(targetPos.x, targetPos.y);
+			// Force an immediate path update
+			pathUpdateTimer = 0;
+		} else {
+			// For patrol behavior, continue with existing path
+			Vector2 guardPos = guard.getPosition();
+			if (patrolPoints != null && patrolPoints.length > 0) {
+				Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
+				if (guardPos.dst(patrolTarget) < PATROL_THRESHOLD) {
+					currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.length;
+					// Force an immediate path update to the new patrol point
+					pathUpdateTimer = 0;
+				}
+			}
+		}
+
+		// The actual movement is handled in updateGuardAI()
 	}
 
 	/**
@@ -334,6 +414,7 @@ public class GameController implements Screen, ContactListener {
 		DudeModel avatar = level.getAvatar();
 		InputController input = InputController.getInstance();
 
+		updateGuardAI(dt);
 
 		// Press N or P to switch light modes
 		if (input.didForward()) {
@@ -481,6 +562,7 @@ public class GameController implements Screen, ContactListener {
 		afkAvatar.applyForce();
 		// Stops guard from continuously sliding, if they got hit by something
 		guard.applyForce();
+
 
 		// Turn the physics engine crank.
 		level.update(dt);
