@@ -27,6 +27,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.b2lights.Guard;
 import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.b2lights.SecurityCamera;
 
 /**
  * Gameplay controller for the game.
@@ -344,7 +345,8 @@ public class GameController implements Screen, ContactListener {
 				case GAR:
 					((Gar) avatar).setMeowed(true);
 					break;
-				default:
+				case OTTO:
+					((Otto) avatar).setInked(true);
 					break;
 			}
 		}
@@ -353,6 +355,7 @@ public class GameController implements Screen, ContactListener {
 		// --- Meow Alert Section ---
 		// If the Gar meows, immediately alert the guard.
 		Guard guard = level.getGuard();
+		SecurityCamera securityCamera = level.getSecurityCamera();
 		switch (avatar.getPlayerType()) {
 			case GAR:{
 				Gar gar = (Gar) avatar;
@@ -365,9 +368,32 @@ public class GameController implements Screen, ContactListener {
 				}
 				break;
 			}
-			default:
+			case OTTO:{
+				Otto otto = (Otto) avatar;
+				if (otto.getInked()) {
+					securityCamera.setBlind(true);
+					otto.setInked(false);
+
+				}
+			}
 				break;
 		}
+
+
+		// If Otto used his blind ability, check for conditions
+		if (securityCamera.isBlinded() && securityCamera.getBlindTimer() >= 0){
+			// Only unblind if timer is up
+			if (securityCamera.getBlindTimer() == 0) {
+				securityCamera.setBlind(false);
+				level.unBlindCamera();
+			}
+			// Otherwise remain blinded and reduce timer accordingly
+			else {
+				securityCamera.setBlindTimer(securityCamera.getBlindTimer() - 1);
+				level.blindCamera();
+			}
+		}
+
 
 
 		// --- Guard Field-of-View (FOV) Logic Section ---
