@@ -430,7 +430,7 @@ public class LevelModel {
 	    	float dist  = light.getFloat("distance");
 	    	int rays = light.getInt("rays");
 
-			PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
+			PointSource point = new PointSource(rayhandler, rays, Color.WHITE, 3, pos[0], pos[1]);
 			point.setColor(color[0],color[1],color[2],color[3]);
 			point.setSoft(light.getBoolean("soft"));
 			
@@ -523,23 +523,26 @@ public class LevelModel {
 		guardCone.setColor(color[0],color[1],color[2],color[3]);
 		guardCone.setSoft(light.getBoolean("soft"));
 
-		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
-		guardCone.setColor(color[0],color[1],color[2],color[3]);
-		guardCone.setSoft(light.getBoolean("soft"));
+//		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle + 100);
+//		camCone.setColor(color[0],color[1],color[2],color[3]);
+//		camCone.setSoft(light.getBoolean("soft"));
+		PointSource camPoint = new PointSource(rayhandler, rays, Color.WHITE, 5, pos[0], pos[1]);
+		camPoint.setColor(color[0],color[1],color[2],color[3]);
+		camPoint.setSoft(light.getBoolean("soft"));
 
 
 		Filter f = new Filter();
 		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
 		guardCone.setContactFilter(f);
 		guardCone.setActive(false);
-		camCone.setContactFilter(f);
-		camCone.setActive(false);
+		camPoint.setContactFilter(f);
+		camPoint.setActive(false);
 
 		guardLights = guardCone;
 		guardLights.attachToBody(guard.getBody(), 0, 0, 90f);
 		guardLights.setActive(true);
 
-		securityCamLights = camCone;
+		securityCamLights = camPoint;
 		securityCamLights.attachToBody(securityCamera.getBody(), 0, 0, 90f);
 		securityCamLights.setActive(true);
 	}
