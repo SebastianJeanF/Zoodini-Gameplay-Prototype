@@ -66,6 +66,8 @@ public class InputController {
 
 	/** How much did we move horizontally? */
 	private float horizontal;
+
+	private boolean faceLeft;
 	/** How much did we move vertically? */
 	private float vertical;
 
@@ -84,6 +86,10 @@ public class InputController {
 	 */
 	public float getHorizontal() {
 		return horizontal;
+	}
+
+	public boolean getFaceLeft() {
+		return faceLeft;
 	}
 
 	/**
@@ -239,9 +245,11 @@ public class InputController {
 		horizontal = (secondary ? horizontal : 0.0f);
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
 			horizontal += 1.0f;
+			faceLeft = false;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			horizontal -= 1.0f;
+			faceLeft = true;
 		}
 
 		vertical = (secondary ? vertical : 0.0f);

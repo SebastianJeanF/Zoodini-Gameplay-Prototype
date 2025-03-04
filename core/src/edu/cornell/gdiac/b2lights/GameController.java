@@ -343,6 +343,12 @@ public class GameController implements Screen, ContactListener {
 			level.activatePrevLight();
 		}
 
+		if (input.getFaceLeft() && avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+			((Otto) avatar).setFlipScale(-1.0f);
+		} else if (avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+			((Otto) avatar).setFlipScale(1.0f);
+		}
+
 		// Check if the ability (meow) is pressed.
 		// For a Gar, this sets a flag to indicate a meow event.
 		if (input.isAbilityPressed()) {

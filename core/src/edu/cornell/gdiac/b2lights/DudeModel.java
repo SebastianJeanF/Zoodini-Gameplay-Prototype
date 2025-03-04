@@ -79,6 +79,14 @@ public class DudeModel extends WheelObstacle {
 	public void setHeightScale(float heightScale) {
 		this.heightScale = heightScale;
 	}
+
+	public float getWidthScale() {
+		return widthScale;
+	}
+
+	public float getHeightScale() {
+		return heightScale;
+	}
 	// END
 
 	public DudeType getPlayerType() {
@@ -303,6 +311,14 @@ public class DudeModel extends WheelObstacle {
 		center = new Vector2(filmstrip.getRegionWidth()/2,filmstrip.getRegionHeight()/2);
 	}
 
+	public FilmStrip getFilmstrip(){
+		return filmstrip;
+	}
+
+	public Vector2 getCenter(){
+		return center;
+	}
+
 	/**
 	 * Applies the force to the body of this dude
 	 *
@@ -384,7 +400,7 @@ public class DudeModel extends WheelObstacle {
 	 * @param canvas Drawing context
 	 */
 	public void draw(ObstacleCanvas canvas) {
-		Float angle = (playerType != DudeType.OTTO) ? getAngle() : 0;
+		float angle = (playerType != DudeType.OTTO) ? getAngle() : 0;
 		if (filmstrip != null) {
 			canvas.draw(filmstrip, Color.WHITE, center.x, center.y, getX() * drawScale.x, getY() * drawScale.y, angle, widthScale, heightScale);
 		}
