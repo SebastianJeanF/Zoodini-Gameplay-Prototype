@@ -17,7 +17,7 @@
     		}
     	},
 		"otto": {
-			"file": 	"textures/walking2.png",
+			"file": 	"textures/otto_walk.png",
 			"wrap":  	false,
 			"sprites":	{
 				"walking" : {
