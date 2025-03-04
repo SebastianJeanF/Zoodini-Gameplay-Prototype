@@ -104,6 +104,8 @@ public class LevelModel {
 	private LightSource securityCamLights;
 	private int activeSecurityCamLight;
 
+	private boolean isBlinded;
+
 	// TO FIX THE TIMESTEP
 	/** The maximum frames per second setting for this level */
 	protected int maxFPS;
@@ -573,11 +575,15 @@ public class LevelModel {
 
 	public void blindCamera() {
 		if (securityCamLights.isActive()){
-			securityCamLights.setActive(false);}
+			securityCamLights.setActive(false);
+			isBlinded = true;
+		}
+
 	}
 
 	public void unBlindCamera() {
 		securityCamLights.setActive(true);
+		isBlinded = false;
 	}
 
 
@@ -809,7 +815,7 @@ public class LevelModel {
 
 
 	public boolean isAvatarInSecurityLight() {
-		if (securityCamera == null || avatar == null) return false;
+		if (securityCamera == null || avatar == null || isBlinded) return false;
 
 		// Get the security camera's position and the avatar's position.
 		Vector2 camPos = securityCamera.getPosition();
