@@ -441,6 +441,7 @@ public class GameController implements Screen, ContactListener {
 			guard.setChaseTimer(guard.getChaseTimer() - 1);;
 			if (guard.getChaseTimer() <= 0 || (guard.isMeowed() && guard.getPosition().epsilonEquals(guard.getTarget(), 1))) {
 				guard.deAgro();
+				currentPatrolIndex = 1;
 				// guardAgro = false;
 				// guardTarget = null;
 			}
