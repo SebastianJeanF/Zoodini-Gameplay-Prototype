@@ -71,6 +71,28 @@ public class GameController implements Screen, ContactListener {
 	private int countdown;
 
 
+	// --- Guard Agro Variables ---
+	private boolean guardAgro = false;
+	private DudeModel guardTarget = null;
+	/** Countdown for how long the guard will chase the player */
+	private int guardChaseTimer = 0;
+	private static final int MAX_CHASE_TIME = 180;
+	final float GUARD_FOV_DISTANCE = 7.0f;  // Maximum detection distance.
+	final float GUARD_FOV_ANGLE = 45.0f;       // Total cone angle in degrees.
+
+
+	// --- Patrol Path Variables for Guard ---
+	private Vector2[] patrolPoints;
+	private int currentPatrolIndex = 0;
+	private static final float PATROL_THRESHOLD = 0.5f; // Distance to switch patrol points
+
+
+
+	// Variables (probably) needed to implement the guard going after a meow
+	private boolean meowAlert = false;
+	private Vector2 meowPos = null;
+
+
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
 
@@ -155,7 +177,10 @@ public class GameController implements Screen, ContactListener {
 	public void setCanvas(ObstacleCanvas canvas) {
 		this.canvas = canvas;
 	}
-	
+
+
+
+
 	/**
 	 * Creates a new game world 
 	 *
@@ -171,6 +196,18 @@ public class GameController implements Screen, ContactListener {
 
 		setComplete(false);
 		setFailure(false);
+
+		// Default patrol path for the guard (adjust coordinates as needed)
+		patrolPoints = new Vector2[] {
+//				new Vector2(2, 2),
+//				new Vector2(8, 2),
+//				new Vector2(8, 8),
+//				new Vector2(2, 8)
+				new Vector2(14,8),
+				new Vector2(1,8)
+
+		};
+		currentPatrolIndex = 0;
 	}
 	
 	/**
@@ -269,6 +306,27 @@ public class GameController implements Screen, ContactListener {
 	}
 	
 	private Vector2 angleCache = new Vector2();
+
+
+
+	void moveGuard(Vector2 targetPos) {
+		Guard guard = level.getGuard();
+		Vector2 guardPos = guard.getPosition();
+		Vector2 direction = new Vector2(targetPos).sub(guardPos);
+		if (direction.len() > 0) {
+			direction.nor().scl(guard.getForce());
+			guard.setMovement(direction.x, direction.y);
+			// Update guard orientation to face the target.
+			guard.setAngle(direction.angleRad());
+		}
+
+		// Update the guard's orientation to face the direction of movement.
+		Vector2 movement = guard.getMovement();
+		if (movement.len2() > 0.0001f) {  // Only update if there is significant movement
+			guard.setAngle(movement.angleRad() - (float)Math.PI/2);
+		}
+	}
+
 	/**
 	 * The core gameplay loop of this world.
 	 *
@@ -284,6 +342,7 @@ public class GameController implements Screen, ContactListener {
 		DudeModel avatar = level.getAvatar();
 		InputController input = InputController.getInstance();
 
+
 		// Press N or P to switch light modes
 		if (input.didForward()) {
 			level.activateNextLight();
@@ -291,6 +350,8 @@ public class GameController implements Screen, ContactListener {
 			level.activatePrevLight();
 		}
 
+		// Check if the ability (meow) is pressed.
+		// For a Gar, this sets a flag to indicate a meow event.
 		if (input.isAbilityPressed()) {
 			switch (avatar.getPlayerType()) {
 				case GAR:
@@ -301,21 +362,91 @@ public class GameController implements Screen, ContactListener {
 			}
 		}
 
-		// Test program to move avatar autonomously
-//		DudeModel avatar = level.getAvatar();
-//		Vector2 avatarPosition = avatar.getPosition();
-//		DudeModel afkAvatar = level.getAvatarAFK();
-//		Vector2 avatarAFKPosition = afkAvatar.getPosition();
-//
-//		// Have AFK avatar follow the main avatar
-//
-//		final float SPEED = 10.0f;
-//		afkAvatar.setMovement((avatarPosition.x - avatarAFKPosition.x)*SPEED, (avatarPosition.y - avatarAFKPosition.y)*SPEED);
+
+		// --- Meow Alert Section ---
+		// If the Gar meows, immediately alert the guard.
+		Guard guard = level.getGuard();
+		switch (avatar.getPlayerType()) {
+			case GAR:{
+				Gar gar = (Gar) avatar;
+				if (gar.getMeowed()) {
+					// When the guard hears a meow, its target is set to the Gar's position.
+					guard.setAgroed(gar);
+					guardChaseTimer = 180; // Reset the chase timer (adjust as needed)
+					System.out.println("Guard alerted by meow, moving to meow position");
+					gar.setMeowed(false);  // Reset the meow flag
+				}
+				break;
+			}
+			default:
+				break;
+		}
 
 
+		// --- Guard Field-of-View (FOV) Logic Section ---
+		// Only check FOV if guard is not already alerted by a meow.
+		if (!guardAgro) {
+
+
+			Vector2 guardPos = guard.getPosition();
+			Vector2 avatarPos = avatar.getPosition();
+			Vector2 toAvatar = new Vector2(avatarPos).sub(guardPos);
+			float distance = toAvatar.len();
+
+			if (distance <= GUARD_FOV_DISTANCE) {
+				Vector2 toAvatarNorm = new Vector2(toAvatar).nor();
+				// Assume guard's forward direction is defined by its current angle (0 rad = up)
+				float guardAngle = guard.getAngle();
+				Vector2 guardFacing = new Vector2(0, 1).setAngleRad(guardAngle + (float)Math.PI/2);
+				float dot = guardFacing.dot(toAvatarNorm);
+				// Calculate half-angle in radians.
+				float halfAngleRad = (GUARD_FOV_ANGLE / 2.0f) * MathUtils.degreesToRadians;
+				if (dot >= Math.cos(halfAngleRad)) {
+					// The avatar is within the guard's field of view.
+					guardAgro = true;
+					guardTarget = avatar;
+					guardChaseTimer = MAX_CHASE_TIME;
+				}
+			}
+		} else {
+			// If already agro, decrement the chase timer.
+			guardChaseTimer--;
+			if (guardChaseTimer <= 0) {
+				guardAgro = false;
+				guardTarget = null;
+			}
+		}
+
+		// --- Guard Movement Update ---
+		if (guardAgro && guardTarget != null) {
+			// If alerted, chase the target.
+			Vector2 targetPos = guardTarget.getPosition();
+			moveGuard(targetPos);
+		} else {
+			// Patrol behavior: follow the defined patrol path.
+			if (patrolPoints != null && patrolPoints.length > 0) {
+				Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
+				if (guard.getPosition().dst(patrolTarget) < PATROL_THRESHOLD) {
+					currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.length;
+					patrolTarget = patrolPoints[currentPatrolIndex];
+				}
+				moveGuard(patrolTarget);
+			} else {
+				guard.setMovement(0, 0);
+			}
+		}
+
+		// --- Avatar Movement ---
 		// Rotate the avatar to face the direction of movement
 		angleCache.set(input.getHorizontal(),input.getVertical());
 		if (angleCache.len2() > 0.0f) {
+
+			// Stops you from moving faster if you press two keys at once
+			// instead of just one
+			if (angleCache.len() > 1.0f) {
+				angleCache.nor();
+			}
+
 			float angle = angleCache.angle();
 			// Convert to radians with up as 0
 			angle = (float)Math.PI*(angle-90.0f)/180.0f;
@@ -325,6 +456,9 @@ public class GameController implements Screen, ContactListener {
 		avatar.setMovement(angleCache.x,angleCache.y);
 		avatar.applyForce();
 
+
+
+		// Additional avatar-specific logic (e.g., Gar's meow ability)
 		switch (avatar.getPlayerType()) {
 			case GAR:
 				Gar gar = (Gar) avatar;
@@ -337,17 +471,20 @@ public class GameController implements Screen, ContactListener {
 				break;
 		}
 
-		// Stops afk avatar from moving, if he got hit by the main avatar
+		System.out.println("Character grid");
+
+		// Stops afk avatar from continuously sliding, if he got hit by something
 		DudeModel afkAvatar = level.getAvatarAFK();
 		afkAvatar.applyForce();
-
-		Guard guard = level.getGuard();
+		// Stops guard from continuously sliding, if they got hit by something
 		guard.applyForce();
 
 		// Turn the physics engine crank.
 		level.update(dt);
 	}
-	
+
+
+
 	/**
 	 * Draw the physics objects to the canvas
 	 *
@@ -482,6 +619,16 @@ public class GameController implements Screen, ContactListener {
 				(bd1 == door   && bd2 == avatar)) {
 				setComplete(true);
 			}
+
+			// Check for failure condition
+			// You lose if one of the characters touches the guards
+			Guard guard = level.getGuard();
+			DudeModel afkAvatar = level.getAvatarAFK();
+			if ((bd1 == guard && (bd2 == avatar || bd2 == afkAvatar)) ||
+					(bd2 == guard && (bd1 == avatar || bd1 == afkAvatar))) {
+				setFailure(true);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -171,8 +171,16 @@ public class LevelModel {
 		return avatarAFK;
 	}
 
+	/**
+	 * Returns a reference to the security camera
+	 * @return a reference to the security camera
+	 */
+	public SecurityCamera getSecurityCamera() {
+		return securityCamera;
+	}
 
-	public edu.cornell.gdiac.b2lights.Guard getGuard(){
+
+	public Guard getGuard(){
 		return guard;
 	}
 
@@ -355,14 +363,12 @@ public class LevelModel {
 		attachGuardLights(guard);
 
 		// Create Camera
-		SecurityCamera camera = new SecurityCamera("SecurityCamera");
+		securityCamera = new SecurityCamera("SecurityCamera");
 		JsonValue camdata = levelFormat.get("securityCamera");
-//		float[] pos = camdata.get("pos").asFloatArray();
-//		float[] size = camdata.get("size").asFloatArray();
-		camera.initialize(directory, camdata);
-		camera.setDrawScale(scale);
-		activate(camera);
-		attachLights(camera);
+		securityCamera.initialize(directory, camdata);
+		securityCamera.setDrawScale(scale);
+		activate(securityCamera);
+		attachLights(securityCamera);
 
 		// Create the grid
 		Grid grid = new Grid(this, 1.0f);
@@ -628,6 +634,8 @@ public class LevelModel {
 				rayhandler.update();
 			}
 			avatar.update(dt);
+			avatarAFK.update(dt);
+			guard.update(dt);
 			goalDoor.update(dt);
 			return true;
 		}

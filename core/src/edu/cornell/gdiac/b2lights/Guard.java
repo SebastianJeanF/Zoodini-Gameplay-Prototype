@@ -12,4 +12,26 @@ public class Guard extends DudeModel {
     public Guard(String type) {
         super(type);
     }
+
+    boolean isChasing = false;
+
+    DudeModel target = null;
+
+    public boolean isAgroed() {
+        return isChasing;
+    }
+
+    public DudeModel getTarget() {
+        return target;
+    }
+
+    public void setAgroed(DudeModel target) {
+        isChasing = true;
+        this.target = target;
+    }
+
+    public void deAgro() {
+        isChasing = false;
+        target = null;
+    }
 }
