@@ -344,6 +344,8 @@ public class LevelModel {
 	    avatar = new Gar();
 		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
+		avatar.setHeightScale(0.3f);
+		avatar.setWidthScale(0.3f);
 	    avatar.setDrawScale(scale);
 	    activate(avatar);
 	    attachLights(avatar);
@@ -353,6 +355,8 @@ public class LevelModel {
 		avatarAFK = new DudeModel("Otto");
 		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
+		avatarAFK.setHeightScale(0.8f);
+		avatarAFK.setWidthScale(0.8f);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
 

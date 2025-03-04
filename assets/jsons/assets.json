@@ -6,13 +6,13 @@
 			"wrapV": "repeated"
     	},
     	"gar": {
-    		"file": 	"textures/walking.png",
+    		"file": 	"textures/cat_walk.png",
     		"wrap":  	false,
     		"sprites":	{
 				"walking" : {
-					"size" : 4,
+					"size" : 3,
 					"rows" : 1,
-					"cols" : 4
+					"cols" : 3
 				}
     		}
     	},
