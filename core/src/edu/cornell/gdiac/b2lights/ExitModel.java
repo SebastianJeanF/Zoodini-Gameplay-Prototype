@@ -21,6 +21,8 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.obstacle.*;
 
+import static com.badlogic.gdx.utils.Align.center;
+
 /**
  * A sensor obstacle representing the end of the level
  *
@@ -28,6 +30,17 @@ import edu.cornell.gdiac.physics.obstacle.*;
  * by reading the JSON value.
  */
 public class ExitModel extends BoxObstacle {
+
+	private float widthScale = 1.0f;
+	private float heightScale = 1.0f;
+
+	public void setWidthScale(float widthScale) {
+		this.widthScale = widthScale;
+	}
+
+	public void setHeightScale(float heightScale) {
+		this.heightScale = heightScale;
+	}
 
 	/**
 	 * Create a new ExitModel with degenerate settings
@@ -85,5 +98,12 @@ public class ExitModel extends BoxObstacle {
 		String key = json.get("texture").asString();
 		TextureRegion texture = new TextureRegion(directory.getEntry(key, Texture.class));
 		setTexture(texture);
+	}
+
+	@Override
+	public void draw(ObstacleCanvas canvas) {
+		if (texture != null) {
+			canvas.draw(texture, Color.WHITE, center, center, getX() * drawScale.x, getY() * drawScale.y, getAngle(), widthScale, heightScale);
+		}
 	}
 }

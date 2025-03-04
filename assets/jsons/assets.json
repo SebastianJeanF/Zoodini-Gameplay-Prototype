@@ -49,7 +49,7 @@
 				}
 			}
 		},
-        "goal": "textures/helicopter.png"
+        "goal": "textures/panda-sprite.png"
   	},
   	"fonts": {
   		"display": {

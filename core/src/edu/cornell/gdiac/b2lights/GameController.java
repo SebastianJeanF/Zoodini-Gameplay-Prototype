@@ -72,6 +72,9 @@ public class GameController implements Screen, ContactListener {
 	/** Countdown active for winning or losing */
 	private int countdown;
 
+	private boolean garAtDoor = false;
+	private boolean ottoAtDoor = false;
+
 
 	// --- Patrol Path Variables for Guard ---
 	private Vector2[] patrolPoints;
@@ -465,8 +468,6 @@ public class GameController implements Screen, ContactListener {
 				break;
 		}
 
-		System.out.println("Character grid");
-
 		// Stops afk avatar from continuously sliding, if he got hit by something
 		DudeModel afkAvatar = level.getAvatarAFK();
 		afkAvatar.applyForce();
@@ -606,18 +607,29 @@ public class GameController implements Screen, ContactListener {
 			Obstacle bd2 = (Obstacle)body2.getUserData();
 
 			DudeModel avatar = level.getAvatar();
+
+			DudeModel afkAvatar = level.getAvatarAFK();
+
 			ExitModel door   = level.getExit();
-			
+
+			boolean avatarAtDoor = (bd1 == avatar && bd2 == door  ) ||
+					(bd1 == door   && bd2 == avatar);
+
 			// Check for win condition
-			if ((bd1 == avatar && bd2 == door  ) ||
-				(bd1 == door   && bd2 == avatar)) {
+			if (avatarAtDoor && avatar.getPlayerType() == DudeModel.DudeType.GAR) {
+				garAtDoor = true;
+			}
+			if (avatarAtDoor && avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+				ottoAtDoor = true;
+			}
+
+			if (garAtDoor && ottoAtDoor) {
 				setComplete(true);
 			}
 
 			// Check for failure condition
 			// You lose if one of the characters touches the guards
 			Guard guard = level.getGuard();
-			DudeModel afkAvatar = level.getAvatarAFK();
 			if ((bd1 == guard && (bd2 == avatar || bd2 == afkAvatar)) ||
 					(bd2 == guard && (bd1 == avatar || bd1 == afkAvatar))) {
 				setFailure(true);

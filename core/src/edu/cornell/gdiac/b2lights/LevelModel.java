@@ -327,7 +327,9 @@ public class LevelModel {
 		// Add level goal
 		goalDoor = new ExitModel();
 		goalDoor.initialize(directory, levelFormat.get("exit"));
-		goalDoor.setDrawScale(scale);
+		goalDoor.setHeightScale(0.25f);
+		goalDoor.setWidthScale(0.25f);
+		goalDoor.setDrawScale(new Vector2(scale.x - 3,scale.y - 3));
 		activate(goalDoor);
 
 	    JsonValue bounds = levelFormat.getChild("exterior");
