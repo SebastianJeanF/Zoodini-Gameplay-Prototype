@@ -371,7 +371,7 @@ public class LevelModel {
 		attachLights(securityCamera);
 
 		// Create the grid
-		Grid grid = new Grid(this, 1.0f);
+		Grid grid = new Grid(this, 2.0f);
 		grid.printGrid();
 	}
 	

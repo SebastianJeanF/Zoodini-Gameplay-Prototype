@@ -69,17 +69,21 @@ public class Grid {
                 continue;
             }
 
+
             // For box obstacles, mark the covered cells as walls
             if (obj instanceof InteriorModel) {
                 InteriorModel wall = (InteriorModel) obj;
                 Vector2 position = new Vector2(wall.getX(), wall.getY());
                 Vector2 dimension = new Vector2(wall.getWidth(), wall.getHeight());
 
+                // Add a small epsilon to ensure boundary walls are detected
+                float epsilon = 0.001f;
+
                 // Convert to grid coordinates
-                int startX = physicsToGridX(position.x - dimension.x/2);
-                int startY = physicsToGridY(position.y - dimension.y/2);
-                int endX = physicsToGridX(position.x + dimension.x/2);
-                int endY = physicsToGridY(position.y + dimension.y/2);
+                int startX = physicsToGridX(position.x - dimension.x/2 - epsilon);
+                int startY = physicsToGridY(position.y - dimension.y/2 - epsilon);
+                int endX = physicsToGridX(position.x + dimension.x/2 - epsilon);
+                int endY = physicsToGridY(position.y + dimension.y/2 - epsilon);
 
                 // Mark all covered cells as walls
                 for (int x = startX; x <= endX; x++) {
@@ -223,10 +227,10 @@ public class Grid {
     public void printGrid() {
         System.out.println(width);
         System.out.println(height);
-        for (int i = 0; i < width; i++) {
-            String[] row = new String[height];
-            for (int j = 0; j < height; j++) {
-                row[j] = grid[i][j].wall ? "X" : "O";
+        for (int j = height - 1; j >= 0; j--) {
+            String[] row = new String[width];
+            for (int i = 0; i < width; i++) {
+                row[i] = grid[i][j].wall ? "X" : "O";
             }
             System.out.println(String.join(" ", row));
         }
