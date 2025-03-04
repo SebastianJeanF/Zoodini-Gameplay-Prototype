@@ -633,6 +633,8 @@ public class GameController implements Screen, ContactListener {
 
 			if (garAtDoor && ottoAtDoor) {
 				setComplete(true);
+				garAtDoor = false;
+				ottoAtDoor = false;
 			}
 
 			// Check for failure condition
