@@ -384,8 +384,9 @@ public class DudeModel extends WheelObstacle {
 	 * @param canvas Drawing context
 	 */
 	public void draw(ObstacleCanvas canvas) {
+		Float angle = (playerType != DudeType.OTTO) ? getAngle() : 0;
 		if (filmstrip != null) {
-			canvas.draw(filmstrip, Color.WHITE, center.x, center.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), widthScale, heightScale);
+			canvas.draw(filmstrip, Color.WHITE, center.x, center.y, getX() * drawScale.x, getY() * drawScale.y, angle, widthScale, heightScale);
 		}
 	}
 }

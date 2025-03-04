@@ -118,6 +118,10 @@ public class LevelModel {
 	/** The amount of time that has passed without updating the frame */
 	protected float physicsTimeLeft;
 
+	/** Add these fields at the top with the other fields **/
+	private float securityCamLightDistance;
+	private float securityCamConeAngle;
+
 	/**
 	 * Returns the bounding rectangle for the physics world
 	 * 
@@ -185,6 +189,14 @@ public class LevelModel {
 
 	public Guard getGuard(){
 		return guard;
+	}
+
+	public LightSource getGuardLights(){
+		return guardLights;
+	}
+
+	public LightSource getGuardLight(){
+		return guardLights;
 	}
 
 
@@ -344,6 +356,8 @@ public class LevelModel {
 	    avatar = new Gar();
 		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
+		avatar.setHeightScale(0.3f);
+		avatar.setWidthScale(0.3f);
 	    avatar.setDrawScale(scale);
 	    activate(avatar);
 	    attachLights(avatar);
@@ -353,6 +367,8 @@ public class LevelModel {
 		avatarAFK = new DudeModel("Otto");
 		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
+		avatarAFK.setHeightScale(0.8f);
+		avatarAFK.setWidthScale(0.8f);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
 
@@ -426,7 +442,7 @@ public class LevelModel {
 	    	float dist  = light.getFloat("distance");
 	    	int rays = light.getInt("rays");
 
-			PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
+			PointSource point = new PointSource(rayhandler, rays, Color.WHITE, 3, pos[0], pos[1]);
 			point.setColor(color[0],color[1],color[2],color[3]);
 			point.setSoft(light.getBoolean("soft"));
 			
@@ -519,25 +535,38 @@ public class LevelModel {
 		guardCone.setColor(color[0],color[1],color[2],color[3]);
 		guardCone.setSoft(light.getBoolean("soft"));
 
-		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
-		guardCone.setColor(color[0],color[1],color[2],color[3]);
-		guardCone.setSoft(light.getBoolean("soft"));
+//		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle + 100);
+//		camCone.setColor(color[0],color[1],color[2],color[3]);
+//		camCone.setSoft(light.getBoolean("soft"));
+		PointSource camPoint = new PointSource(rayhandler, rays, Color.WHITE, 5, pos[0], pos[1]);
+		camPoint.setColor(color[0],color[1],color[2],color[3]);
+		camPoint.setSoft(light.getBoolean("soft"));
 
 
 		Filter f = new Filter();
 		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
 		guardCone.setContactFilter(f);
 		guardCone.setActive(false);
-		camCone.setContactFilter(f);
-		camCone.setActive(false);
+
+		Filter f2 = new Filter();
+		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
+//		camCone.setContactFilter(f2);
+//		camCone.setActive(false);
+		camPoint.setContactFilter(f2);
+		camPoint.setActive(false);
 
 		guardLights = guardCone;
 		guardLights.attachToBody(guard.getBody(), 0, 0, 90f);
 		guardLights.setActive(true);
 
-		securityCamLights = camCone;
-		securityCamLights.attachToBody(securityCamera.getBody(), 0, 0, 90f);
+		securityCamLights = camPoint;
+		securityCamLights.attachToBody(securityCamera.getBody(), securityCamLights.getX(),
+				securityCamLights.getY(), securityCamera.getAngle() + 180f);
 		securityCamLights.setActive(true);
+
+		// Store parameters for later security light detection
+		securityCamLightDistance = dist;
+		securityCamConeAngle = angle;
 	}
 
 	
@@ -591,6 +620,10 @@ public class LevelModel {
 
 		if(guardLights != null) {
 			guardLights.remove();
+		}
+
+		if(securityCamLights != null){
+			securityCamLights.remove();
 		}
 
 		if (rayhandler != null) {
@@ -760,4 +793,39 @@ public class LevelModel {
 		}
 		return value;
 	}
+
+
+
+	public boolean isAvatarInSecurityLight() {
+		if (securityCamera == null || avatar == null) return false;
+
+		// Get the security camera's position and the avatar's position.
+		Vector2 camPos = securityCamera.getPosition();
+		Vector2 avatarPos = avatar.getPosition();
+
+		// Compute the vector from the camera to the avatar.
+		Vector2 toAvatar = new Vector2(avatarPos).sub(camPos);
+		float distance = toAvatar.len();
+
+		// If the avatar is farther than the light's distance, it's not illuminated.
+		if (distance > securityCamLightDistance) return false;
+
+		// Compute the security camera's effective facing direction.
+		// (Assuming the security camera's body rotation plus the 90° offset used in attach.)
+		float effectiveAngle = securityCamera.getAngle() + 90f;
+		float effectiveRad = effectiveAngle * MathUtils.degreesToRadians;
+		Vector2 camDir = new Vector2(MathUtils.cos(effectiveRad), MathUtils.sin(effectiveRad));
+
+		// Normalize the vector from the camera to the avatar.
+		toAvatar.nor();
+		float dot = camDir.dot(toAvatar);
+
+		// The half-angle of the light cone in radians.
+		float halfConeRad = (securityCamConeAngle * MathUtils.degreesToRadians) / 2;
+
+		// If the angle between the camera's facing and the vector to the avatar
+		// is less than half the cone angle, the avatar is in the light.
+		return dot >= Math.cos(halfConeRad);
+	}
+
 }

@@ -99,7 +99,7 @@
 			"facing":		  90,
 			"rays":			 512,
 			"soft":			false,
-			"excludeBits":	"0010"
+			"excludeBits":	"0011"
 		}
 	},
     "avatarGar": {
