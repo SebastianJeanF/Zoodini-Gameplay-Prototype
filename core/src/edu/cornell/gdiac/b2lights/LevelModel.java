@@ -99,8 +99,11 @@ public class LevelModel {
 	/** The current light source being used.  If -1, there are no shadows */
 	private int activeLight;
 
-	private Array<LightSource> guardLights = new Array<LightSource>();
+	private LightSource guardLights;
 	private int activeGuardLight;
+	private LightSource securityCamLights;
+	private int activeSecurityCamLight;
+
 	// TO FIX THE TIMESTEP
 	/** The maximum frames per second setting for this level */
 	protected int maxFPS;
@@ -312,7 +315,7 @@ public class LevelModel {
 		}
 		createPointLights(levelFormat.get("pointlights"));
 		createConeLights(levelFormat.get("conelights"));
-		
+
 		// Add level goal
 		goalDoor = new ExitModel();
 		goalDoor.initialize(directory, levelFormat.get("exit"));
@@ -352,7 +355,7 @@ public class LevelModel {
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setDrawScale(scale);
 		activate(avatarAFK);
-		//attachLights(avatarAFK);
+
 
 		// Create Guard
 		guard = new Guard("Guard");
@@ -360,7 +363,6 @@ public class LevelModel {
 		guard.initialize(directory, guardData);
 		guard.setDrawScale(scale);
 		activate(guard);
-		attachGuardLights(guard);
 
 		// Create Camera
 		securityCamera = new SecurityCamera("SecurityCamera");
@@ -370,7 +372,8 @@ public class LevelModel {
 		securityCamera.setWidthScale(0.25f);
 		securityCamera.setDrawScale(scale);
 		activate(securityCamera);
-		attachLights(securityCamera);
+
+		createAndAttachGuardLights(levelFormat.get("securitylights"));
 
 		// Create the grid
 		Grid grid = new Grid(this, 1.0f);
@@ -470,19 +473,7 @@ public class LevelModel {
 			cone.setActive(false); // TURN ON LATER
 			lights.add(cone);
 
-
-			ConeSource guardCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
-			guardCone.setColor(color[0],color[1],color[2],color[3]);
-			guardCone.setSoft(light.getBoolean("soft"));
-
-		    	Filter f2 = new Filter();
-		    	f2.maskBits = bitStringToComplement("0010");
-			guardCone.setContactFilter(f2);
-			guardCone.setActive(false); // TURN ON LATER
-
-			guardLights.add(guardCone);
-
-	        light = light.next();
+		    light = light.next();
 	    }
 	}
 
@@ -514,21 +505,40 @@ public class LevelModel {
 		// END REMOVE
 	}
 
-	public void attachGuardLights(Guard guard) {
-		for(LightSource light : guardLights) {
-			light.attachToBody(guard.getBody(), 0, 0, 90f);
-		}
-		// This code dims the map
-		if(activeGuardLight == 0) {
-			if (guardLights.size > 0) {
-				guardLights.get(0).setActive(true);
-			} else {
-				activeGuardLight = -1;
-			}
-		}
-		// END REMOVE
-	}
+	public void createAndAttachGuardLights(JsonValue json) {
+		JsonValue light = json.child();
 
+		float[] color = light.get("color").asFloatArray();
+		float[] pos = light.get("pos").asFloatArray();
+		float dist  = light.getFloat("distance");
+		float face  = light.getFloat("facing");
+		float angle = light.getFloat("angle");
+		int rays = light.getInt("rays");
+
+		ConeSource guardCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
+		guardCone.setColor(color[0],color[1],color[2],color[3]);
+		guardCone.setSoft(light.getBoolean("soft"));
+
+		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle);
+		guardCone.setColor(color[0],color[1],color[2],color[3]);
+		guardCone.setSoft(light.getBoolean("soft"));
+
+
+		Filter f = new Filter();
+		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
+		guardCone.setContactFilter(f);
+		guardCone.setActive(false);
+		camCone.setContactFilter(f);
+		camCone.setActive(false);
+
+		guardLights = guardCone;
+		guardLights.attachToBody(guard.getBody(), 0, 0, 90f);
+		guardLights.setActive(true);
+
+		securityCamLights = camCone;
+		securityCamLights.attachToBody(securityCamera.getBody(), 0, 0, 90f);
+		securityCamLights.setActive(true);
+	}
 
 	
 	/**
@@ -577,12 +587,11 @@ public class LevelModel {
 		for(LightSource light : lights) {
 			light.remove();
 		}
-		for(LightSource light : guardLights){
-			light.remove();
-		}
-
 		lights.clear();
-		guardLights.clear();
+
+		if(guardLights != null) {
+			guardLights.remove();
+		}
 
 		if (rayhandler != null) {
 			rayhandler.dispose();
