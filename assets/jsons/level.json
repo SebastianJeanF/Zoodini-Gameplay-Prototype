@@ -22,7 +22,7 @@
 		"excludeBits":	"0000",
 		"startframe":       0,
 		"walklimit":		4,
-		"texture":     	"guard.walking",
+		"texture":     	"camera.camera",
 		"debugcolor":  	"white",
 		"debugopacity":	192
 	},

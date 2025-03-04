@@ -366,6 +366,8 @@ public class LevelModel {
 		securityCamera = new SecurityCamera("SecurityCamera");
 		JsonValue camdata = levelFormat.get("securityCamera");
 		securityCamera.initialize(directory, camdata);
+		securityCamera.setHeightScale(0.25f);
+		securityCamera.setWidthScale(0.25f);
 		securityCamera.setDrawScale(scale);
 		activate(securityCamera);
 		attachLights(securityCamera);
