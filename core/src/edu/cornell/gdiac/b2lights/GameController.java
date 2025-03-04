@@ -474,7 +474,7 @@ public class GameController implements Screen, ContactListener {
 				break;
 		}
 
-		System.out.println("Character grid");
+		// System.out.println("Character grid");
 
 		// Stops afk avatar from continuously sliding, if he got hit by something
 		DudeModel afkAvatar = level.getAvatarAFK();
