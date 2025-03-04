@@ -531,9 +531,9 @@ public class LevelModel {
 		guardCone.setColor(color[0],color[1],color[2],color[3]);
 		guardCone.setSoft(light.getBoolean("soft"));
 
-		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle + 100);
-		camCone.setColor(color[0],color[1],color[2],color[3]);
-		camCone.setSoft(light.getBoolean("soft"));
+//		ConeSource camCone = new ConeSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1], face, angle + 100);
+//		camCone.setColor(color[0],color[1],color[2],color[3]);
+//		camCone.setSoft(light.getBoolean("soft"));
 		PointSource camPoint = new PointSource(rayhandler, rays, Color.WHITE, 5, pos[0], pos[1]);
 		camPoint.setColor(color[0],color[1],color[2],color[3]);
 		camPoint.setSoft(light.getBoolean("soft"));
@@ -546,14 +546,16 @@ public class LevelModel {
 
 		Filter f2 = new Filter();
 		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
-		camCone.setContactFilter(f2);
-		camCone.setActive(false);
+//		camCone.setContactFilter(f2);
+//		camCone.setActive(false);
+		camPoint.setContactFilter(f2);
+		camPoint.setActive(false);
 
 		guardLights = guardCone;
 		guardLights.attachToBody(guard.getBody(), 0, 0, 90f);
 		guardLights.setActive(true);
 
-		securityCamLights = camCone;
+		securityCamLights = camPoint;
 		securityCamLights.attachToBody(securityCamera.getBody(), securityCamLights.getX(),
 				securityCamLights.getY(), securityCamera.getAngle() + 180f);
 		securityCamLights.setActive(true);
