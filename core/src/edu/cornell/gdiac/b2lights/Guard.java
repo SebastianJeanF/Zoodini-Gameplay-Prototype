@@ -3,8 +3,8 @@ package edu.cornell.gdiac.b2lights;
 import com.badlogic.gdx.math.Vector2;
 
 public class Guard extends DudeModel {
-    public static final int MAX_CHASE_TIME = 420;
-    public static final float FOV_DISTANCE = 7.0f; // Maximum detection distance.
+    public static final int MAX_CHASE_TIME = 360;
+    public static final float FOV_DISTANCE = 10.0f; // Maximum detection distance.
     public static final float FOV_ANGLE = 45.0f; // Total cone angle in degrees.
 
     private boolean isChasing;

@@ -118,6 +118,10 @@ public class LevelModel {
 	/** The amount of time that has passed without updating the frame */
 	protected float physicsTimeLeft;
 
+	/** Add these fields at the top with the other fields **/
+	private float securityCamLightDistance;
+	private float securityCamConeAngle;
+
 	/**
 	 * Returns the bounding rectangle for the physics world
 	 * 
@@ -559,6 +563,10 @@ public class LevelModel {
 		securityCamLights.attachToBody(securityCamera.getBody(), securityCamLights.getX(),
 				securityCamLights.getY(), securityCamera.getAngle() + 180f);
 		securityCamLights.setActive(true);
+
+		// Store parameters for later security light detection
+		securityCamLightDistance = dist;
+		securityCamConeAngle = angle;
 	}
 
 	
@@ -785,4 +793,39 @@ public class LevelModel {
 		}
 		return value;
 	}
+
+
+
+	public boolean isAvatarInSecurityLight() {
+		if (securityCamera == null || avatar == null) return false;
+
+		// Get the security camera's position and the avatar's position.
+		Vector2 camPos = securityCamera.getPosition();
+		Vector2 avatarPos = avatar.getPosition();
+
+		// Compute the vector from the camera to the avatar.
+		Vector2 toAvatar = new Vector2(avatarPos).sub(camPos);
+		float distance = toAvatar.len();
+
+		// If the avatar is farther than the light's distance, it's not illuminated.
+		if (distance > securityCamLightDistance) return false;
+
+		// Compute the security camera's effective facing direction.
+		// (Assuming the security camera's body rotation plus the 90° offset used in attach.)
+		float effectiveAngle = securityCamera.getAngle() + 90f;
+		float effectiveRad = effectiveAngle * MathUtils.degreesToRadians;
+		Vector2 camDir = new Vector2(MathUtils.cos(effectiveRad), MathUtils.sin(effectiveRad));
+
+		// Normalize the vector from the camera to the avatar.
+		toAvatar.nor();
+		float dot = camDir.dot(toAvatar);
+
+		// The half-angle of the light cone in radians.
+		float halfConeRad = (securityCamConeAngle * MathUtils.degreesToRadians) / 2;
+
+		// If the angle between the camera's facing and the vector to the avatar
+		// is less than half the cone angle, the avatar is in the light.
+		return dot >= Math.cos(halfConeRad);
+	}
+
 }

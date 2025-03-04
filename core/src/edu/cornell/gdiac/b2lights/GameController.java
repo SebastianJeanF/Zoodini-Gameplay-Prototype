@@ -412,7 +412,16 @@ public class GameController implements Screen, ContactListener {
 		}
 
 		// --- Guard Movement Update ---
-		if (/* guardAgro && guardTarget != null */ guard.isAgroed()) {
+
+		// Check if the avatar is illuminated by the security camera's light.
+		if (level.isAvatarInSecurityLight()) {
+			// Trigger the guard to chase the avatar.
+			guard.setAgroed(avatar.getPosition().cpy(), false);
+			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+			moveGuard(avatar.getPosition().cpy());
+			System.out.println("Guard alerted by security camera light!");
+		}
+		else if (/* guardAgro && guardTarget != null */ guard.isAgroed()) {
 			// If alerted, chase the target.
 			Vector2 targetPos = guard.getTarget();
 			moveGuard(targetPos);
@@ -622,6 +631,8 @@ public class GameController implements Screen, ContactListener {
 					(bd2 == guard && (bd1 == avatar || bd1 == afkAvatar))) {
 				setFailure(true);
 			}
+
+
 
 		} catch (Exception e) {
 			e.printStackTrace();
