@@ -68,6 +68,17 @@ public class DudeModel extends WheelObstacle {
 
 	/** The type of player the DudeModel is **/
 	private Player playerType;
+
+	private float widthScale = 1.0f;
+	private float heightScale = 1.0f;
+
+	public void setWidthScale(float widthScale) {
+		this.widthScale = widthScale;
+	}
+
+	public void setHeightScale(float heightScale) {
+		this.heightScale = heightScale;
+	}
 	// END
 
 	public Player getPlayerType() {
@@ -374,7 +385,7 @@ public class DudeModel extends WheelObstacle {
 	 */
 	public void draw(ObstacleCanvas canvas) {
 		if (filmstrip != null) {
-			canvas.draw(filmstrip,Color.WHITE,center.x,center.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1.0f,1.0f);
+			canvas.draw(filmstrip, Color.WHITE, center.x, center.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), widthScale, heightScale);
 		}
 	}
 }
