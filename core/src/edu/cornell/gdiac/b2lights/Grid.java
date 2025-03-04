@@ -160,6 +160,39 @@ public class Grid {
     }
 
     /**
+     * Sets the specified grid cell to be visited during pathfinding
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     */
+    public void setVisited(int x, int y) {
+        grid[x][y].visited = true;
+    }
+
+
+    /**
+     * Checks if the specified grid cell is a goal for pathfinding
+     *
+     * @param x The x grid coordinate
+     * @param y The y grid coordinate
+     * @return True if the cell is a goal, false otherwise
+     */
+    public boolean isGoal(int x, int y) {
+        return grid[x][y].goal;
+    }
+
+    /**
+     * Converts screen coordinates to grid coordinates
+     *
+     * @param screenX The x coordinate in screen space
+     * @return The corresponding x coordinate in grid space
+     */
+    public int screenToGridX(float screenX) {
+        float physicsX = screenX / scale.x;
+        return physicsToGridX(physicsX);
+    }
+
+    /**
      * Converts screen coordinates to grid coordinates
      *
      * @param screenY The y coordinate in screen space
@@ -182,14 +215,16 @@ public class Grid {
     }
 
     /**
-     * Checks if the specified grid cell is a goal for pathfinding
+     * Makrs the specified grid cell as a goal for pathfinding
      *
      * @param x The x grid coordinate
      * @param y The y grid coordinate
-     * @return True if the cell is a goal, false otherwise
      */
-    public boolean isGoal(int x, int y) {
-        return grid[x][y].goal;
+    public void setGoal(int x, int y) {
+        if (!inBounds(x, y)) {
+            return;
+        }
+        grid[x][y].goal = true;
     }
 
     /**
