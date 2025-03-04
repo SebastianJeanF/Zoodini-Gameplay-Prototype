@@ -366,7 +366,7 @@ public class LevelModel {
 
 
 		// Create the dude and attach light sources
-		avatarAFK = new DudeModel("Otto");
+		avatarAFK = new Otto();
 		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
 		avatarAFK.setHeightScale(0.8f);
@@ -570,6 +570,16 @@ public class LevelModel {
 		securityCamLightDistance = dist;
 		securityCamConeAngle = angle;
 	}
+
+	public void blindCamera() {
+		if (securityCamLights.isActive()){
+			securityCamLights.setActive(false);}
+	}
+
+	public void unBlindCamera() {
+		securityCamLights.setActive(true);
+	}
+
 
 	
 	/**
