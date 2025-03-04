@@ -196,8 +196,8 @@ public class GameController implements Screen, ContactListener {
 //				new Vector2(8, 2),
 //				new Vector2(8, 8),
 //				new Vector2(2, 8)
+				new Vector2(1,8),
 				new Vector2(14,8),
-				new Vector2(1,8)
 
 		};
 		currentPatrolIndex = 0;
@@ -409,7 +409,7 @@ public class GameController implements Screen, ContactListener {
 
 		// --- Guard Field-of-View (FOV) Logic Section ---
 		// Only check FOV if guard is not already alerted by a meow.
-		if (!guard.isAgroed()) {
+
 
 
 			if (!guard.isMeowed()) {
@@ -434,34 +434,52 @@ public class GameController implements Screen, ContactListener {
 					// guardAgro = true;
 					// guardTarget = avatar.getPosition();
 					guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+					System.out.println("Guard alerted by FOV, moving to avatar position");
 				}
+				else {
+					// If already agro, decrement the chase timer.
+					guard.setChaseTimer(guard.getChaseTimer() - 1);
+					if (guard.getChaseTimer() <= 0 || (guard.isMeowed() && guard.getPosition().epsilonEquals(guard.getTarget(), 1))) {
+						guard.deAgro();
+						System.out.println("Guard de-agroed");
+					}
 			}}
-		} else {
-			// If already agro, decrement the chase timer.
-			guard.setChaseTimer(guard.getChaseTimer() - 1);;
-			if (guard.getChaseTimer() <= 0 || (guard.isMeowed() && guard.getPosition().epsilonEquals(guard.getTarget(), 1))) {
-				guard.deAgro();
-				currentPatrolIndex = 1;
-				// guardAgro = false;
-				// guardTarget = null;
-			}
 		}
 
+		guard.setChaseTimer(guard.getChaseTimer() - 1);
 		// --- Guard Movement Update ---
 
 		// Check if the avatar is illuminated by the security camera's light.
 		if (level.isAvatarInSecurityLight()) {
 			// Trigger the guard to chase the avatar.
-			guard.setAgroed(avatar.getPosition().cpy(), false);
+			guard.setCameraAlerted(true);
+			guard.setTarget(avatar.getPosition().cpy());
 			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
 			moveGuard(avatar.getPosition().cpy());
 			System.out.println("Guard alerted by security camera light!");
 		}
-		else if (/* guardAgro && guardTarget != null */ guard.isAgroed()) {
+
+
+		// Undo camera alert if they reached target
+		if (guard.isCameraAlerted()
+				&& guard.getPosition().dst(guard.getTarget()) < 0.1f || guard.getChaseTimer() <= 0) {
+			guard.setCameraAlerted(false);
+		}
+
+		// Undo meow if they reached target
+		if (guard.isMeowed()
+				&& guard.getPosition().dst(guard.getTarget()) < 0.1f || guard.getChaseTimer() <= 0) {
+			guard.setMeow(false);
+			guard.deAgro();
+		}
+
+		if (guard.isAgroed() ) {
 			// If alerted, chase the target.
 			Vector2 targetPos = guard.getTarget();
 			moveGuard(targetPos);
-		} else {
+
+//			System.out.println("Guard is agroed, target position: " + targetPos);
+		} else if (!guard.isCameraAlerted() && !guard.isMeowed()) {
 			// Patrol behavior: follow the defined patrol path.
 			if (patrolPoints != null && patrolPoints.length > 0) {
 				Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
@@ -473,6 +491,7 @@ public class GameController implements Screen, ContactListener {
 			} else {
 				guard.setMovement(0, 0);
 			}
+//			System.out.println("Guard is patrolling");
 		}
 
 		// --- Avatar Movement ---
