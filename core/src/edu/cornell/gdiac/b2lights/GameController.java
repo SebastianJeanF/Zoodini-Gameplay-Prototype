@@ -24,6 +24,8 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.physics.lights.ConeSource;
+import edu.cornell.gdiac.physics.lights.LightSource;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.b2lights.Guard;
 import edu.cornell.gdiac.physics.obstacle.*;
@@ -381,7 +383,9 @@ public class GameController implements Screen, ContactListener {
 			Vector2 toAvatar = new Vector2(avatarPos).sub(guardPos);
 			float distance = toAvatar.len();
 
-			if (distance <= Guard.FOV_DISTANCE) {
+			//if (distance <= Guard.FOV_DISTANCE) {
+			LightSource guardlight = level.getGuardLight();
+			if(guardlight.contains(avatar.getX(), avatar.getY())){
 				Vector2 toAvatarNorm = new Vector2(toAvatar).nor();
 				// Assume guard's forward direction is defined by its current angle (0 rad = up)
 				float guardAngle = guard.getAngle();

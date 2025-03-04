@@ -187,6 +187,14 @@ public class LevelModel {
 		return guard;
 	}
 
+	public LightSource getGuardLights(){
+		return guardLights;
+	}
+
+	public LightSource getGuardLight(){
+		return guardLights;
+	}
+
 
 	/**
 	 * Returns a reference to the exit door
@@ -532,7 +540,10 @@ public class LevelModel {
 		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
 		guardCone.setContactFilter(f);
 		guardCone.setActive(false);
-		camCone.setContactFilter(f);
+
+		Filter f2 = new Filter();
+		f.maskBits = bitStringToComplement(light.getString("excludeBits"));
+		camCone.setContactFilter(f2);
 		camCone.setActive(false);
 
 		guardLights = guardCone;
@@ -540,7 +551,8 @@ public class LevelModel {
 		guardLights.setActive(true);
 
 		securityCamLights = camCone;
-		securityCamLights.attachToBody(securityCamera.getBody(), 0, 0, 90f);
+		securityCamLights.attachToBody(securityCamera.getBody(), securityCamLights.getX(),
+				securityCamLights.getY(), securityCamera.getAngle() + 180f);
 		securityCamLights.setActive(true);
 	}
 
@@ -595,6 +607,10 @@ public class LevelModel {
 
 		if(guardLights != null) {
 			guardLights.remove();
+		}
+
+		if(securityCamLights != null){
+			securityCamLights.remove();
 		}
 
 		if (rayhandler != null) {
