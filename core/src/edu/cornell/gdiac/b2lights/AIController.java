@@ -43,10 +43,17 @@ public class AIController {
     private GameSession session;
 
 
-    public AIController(int id) {
+    /**
+     * Creates an AIController for the guard with the given id.
+     *
+     * @param id The unique ship identifier
+     * @param session The current game session
+     */
+    public AIController(int id, GameSession session) {
         this.id = id;
         this.state = FSMState.NEUTRAL;
         this.target = null;
+        this.session = session;
     }
 
     /**
@@ -109,7 +116,7 @@ public class AIController {
             for (int[] dir : DIRECTIONS) { // add neighbors to the queue
                 int dx = dir[0]; int dy = dir[1];
                 int newX = currX + dx; int newY = currY + dy;
-                if (grid.inBounds(newX, newY) && !grid.isWall(newX, newY)) {
+                if (grid.inBounds(newX, newY) && !grid.isWall(newX, newY) && grid.isVisited(newX, newY)) {
                     int[] neiCords = {newX, newY, firstStep};
                     queue.addLast(neiCords);
                     grid.setVisited(newX, newY);
