@@ -89,7 +89,19 @@
 			"soft":			false,
       		"excludeBits":	"1111"
 		}
-	}, 
+	},
+	"securitylights":{
+		"xray": {
+			"color":		[1.0, 0.0, 0.0, 1.0],
+			"pos":			[  0,   0],
+			"distance":		   9,
+			"angle":	 	  40,
+			"facing":		  90,
+			"rays":			 512,
+			"soft":			false,
+			"excludeBits":	"0010"
+		}
+	},
     "avatarGar": {
         "pos":        	[ 1.5, 1.5],
         "radius":      	0.4,

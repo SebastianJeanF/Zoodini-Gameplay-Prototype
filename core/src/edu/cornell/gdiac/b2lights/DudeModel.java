@@ -64,10 +64,10 @@ public class DudeModel extends WheelObstacle {
 
 	// Sebastian: NEW CODE
 	/** Player types **/
-	public enum Player {GAR, OTTO}
+	public enum DudeType {GAR, OTTO}
 
 	/** The type of player the DudeModel is **/
-	private Player playerType;
+	private DudeType playerType;
 
 	private float widthScale = 1.0f;
 	private float heightScale = 1.0f;
@@ -81,7 +81,7 @@ public class DudeModel extends WheelObstacle {
 	}
 	// END
 
-	public Player getPlayerType() {
+	public DudeType getPlayerType() {
 		return playerType;
 	}
 
@@ -237,10 +237,10 @@ public class DudeModel extends WheelObstacle {
 		super(0,0,1.0f);
 		setFixedRotation(false);
 		if (type.equals("Gar")) {
-			playerType = Player.GAR;
+			playerType = DudeType.GAR;
 		}
 		else if (type.equals("Otto")) {
-			playerType = Player.OTTO;
+			playerType = DudeType.OTTO;
 		}
 //		else {
 //			throw new IllegalArgumentException("Invalid player type");

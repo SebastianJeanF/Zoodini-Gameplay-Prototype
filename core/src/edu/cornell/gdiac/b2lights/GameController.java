@@ -71,16 +71,6 @@ public class GameController implements Screen, ContactListener {
 	private int countdown;
 
 
-	// --- Guard Agro Variables ---
-	private boolean guardAgro = false;
-	private DudeModel guardTarget = null;
-	/** Countdown for how long the guard will chase the player */
-	private int guardChaseTimer = 0;
-	private static final int MAX_CHASE_TIME = 180;
-	final float GUARD_FOV_DISTANCE = 7.0f;  // Maximum detection distance.
-	final float GUARD_FOV_ANGLE = 45.0f;       // Total cone angle in degrees.
-
-
 	// --- Patrol Path Variables for Guard ---
 	private Vector2[] patrolPoints;
 	private int currentPatrolIndex = 0;
@@ -88,9 +78,6 @@ public class GameController implements Screen, ContactListener {
 
 
 
-	// Variables (probably) needed to implement the guard going after a meow
-	private boolean meowAlert = false;
-	private Vector2 meowPos = null;
 
 
 	/** Mark set to handle more sophisticated collision callbacks */
@@ -371,8 +358,8 @@ public class GameController implements Screen, ContactListener {
 				Gar gar = (Gar) avatar;
 				if (gar.getMeowed()) {
 					// When the guard hears a meow, its target is set to the Gar's position.
-					guard.setAgroed(gar);
-					guardChaseTimer = 180; // Reset the chase timer (adjust as needed)
+					guard.setAgroed(gar.getPosition().cpy(), true);
+					guard.setChaseTimer(Guard.MAX_CHASE_TIME); // Reset the chase timer (adjust as needed)
 					System.out.println("Guard alerted by meow, moving to meow position");
 					gar.setMeowed(false);  // Reset the meow flag
 				}
@@ -385,42 +372,45 @@ public class GameController implements Screen, ContactListener {
 
 		// --- Guard Field-of-View (FOV) Logic Section ---
 		// Only check FOV if guard is not already alerted by a meow.
-		if (!guardAgro) {
+		if (!guard.isAgroed()) {
 
 
+			if (!guard.isMeowed()) {
 			Vector2 guardPos = guard.getPosition();
 			Vector2 avatarPos = avatar.getPosition();
 			Vector2 toAvatar = new Vector2(avatarPos).sub(guardPos);
 			float distance = toAvatar.len();
 
-			if (distance <= GUARD_FOV_DISTANCE) {
+			if (distance <= Guard.FOV_DISTANCE) {
 				Vector2 toAvatarNorm = new Vector2(toAvatar).nor();
 				// Assume guard's forward direction is defined by its current angle (0 rad = up)
 				float guardAngle = guard.getAngle();
 				Vector2 guardFacing = new Vector2(0, 1).setAngleRad(guardAngle + (float)Math.PI/2);
 				float dot = guardFacing.dot(toAvatarNorm);
 				// Calculate half-angle in radians.
-				float halfAngleRad = (GUARD_FOV_ANGLE / 2.0f) * MathUtils.degreesToRadians;
+				float halfAngleRad = (Guard.FOV_ANGLE / 2.0f) * MathUtils.degreesToRadians;
 				if (dot >= Math.cos(halfAngleRad)) {
 					// The avatar is within the guard's field of view.
-					guardAgro = true;
-					guardTarget = avatar;
-					guardChaseTimer = MAX_CHASE_TIME;
+					guard.setAgroed(avatar.getPosition(), false);
+					// guardAgro = true;
+					// guardTarget = avatar.getPosition();
+					guard.setChaseTimer(Guard.MAX_CHASE_TIME);
 				}
-			}
+			}}
 		} else {
 			// If already agro, decrement the chase timer.
-			guardChaseTimer--;
-			if (guardChaseTimer <= 0) {
-				guardAgro = false;
-				guardTarget = null;
+			guard.setChaseTimer(guard.getChaseTimer() - 1);;
+			if (guard.getChaseTimer() <= 0 || (guard.isMeowed() && guard.getPosition().epsilonEquals(guard.getTarget(), 1))) {
+				guard.deAgro();
+				// guardAgro = false;
+				// guardTarget = null;
 			}
 		}
 
 		// --- Guard Movement Update ---
-		if (guardAgro && guardTarget != null) {
+		if (/* guardAgro && guardTarget != null */ guard.isAgroed()) {
 			// If alerted, chase the target.
-			Vector2 targetPos = guardTarget.getPosition();
+			Vector2 targetPos = guard.getTarget();
 			moveGuard(targetPos);
 		} else {
 			// Patrol behavior: follow the defined patrol path.
