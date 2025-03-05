@@ -405,4 +405,22 @@ public class DudeModel extends WheelObstacle {
 			canvas.draw(filmstrip, Color.WHITE, center.x, center.y, getX() * drawScale.x, getY() * drawScale.y, angle, widthScale, heightScale);
 		}
 	}
+
+
+	// STAMINA CODE
+	private float stamina;
+	private float maxStamina;
+
+	public float getStamina() {
+		return stamina;
+	}
+	public void setStamina(float stamina) {
+		this.stamina = stamina;
+	}
+	public float getMaxStamina() {
+		return maxStamina;
+	}
+	public void setMaxStamina(float maxStamina) {
+		this.maxStamina = maxStamina;
+	}
 }

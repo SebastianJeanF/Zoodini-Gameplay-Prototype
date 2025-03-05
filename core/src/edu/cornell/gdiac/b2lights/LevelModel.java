@@ -125,6 +125,7 @@ public class LevelModel {
 	/** Add these fields at the top with the other fields **/
 	private float securityCamConeAngle;
 
+	private float MAX_STAMINA = 100f;
 	/**
 	 * Returns the bounding rectangle for the physics world
 	 * 
@@ -364,6 +365,8 @@ public class LevelModel {
 		avatar.setHeightScale(0.3f);
 		avatar.setWidthScale(0.3f);
 	    avatar.setDrawScale(scale);
+		avatar.setMaxStamina(MAX_STAMINA);
+		avatar.setStamina(MAX_STAMINA);
 	    activate(avatar);
 	    attachLights(avatar);
 
@@ -375,6 +378,8 @@ public class LevelModel {
 		avatarAFK.setHeightScale(0.8f);
 		avatarAFK.setWidthScale(0.8f);
 		avatarAFK.setDrawScale(scale);
+		avatarAFK.setMaxStamina(MAX_STAMINA);
+		avatarAFK.setStamina(MAX_STAMINA);
 		activate(avatarAFK);
 
 
@@ -571,6 +576,7 @@ public class LevelModel {
 
 		// Store parameters for later security light detection
 		securityCamConeAngle = angle;
+
 	}
 
 	public void blindCamera() {
@@ -742,9 +748,13 @@ public class LevelModel {
 	 */
 	public void draw(ObstacleCanvas canvas) {
 		canvas.clear();
-		
+
+
 		// Draw the sprites first (will be hidden by shadows)
 		canvas.begin();
+
+
+
 		for(Obstacle obj : objects) {
 			obj.draw(canvas);
 		}
@@ -827,5 +837,7 @@ public class LevelModel {
 		// If the distance is less than or equal to the light's radius, the avatar is illuminated.
 		return distance <= securityCamLightDistance;
 	}
+
+
 
 }

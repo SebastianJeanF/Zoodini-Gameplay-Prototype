@@ -12,6 +12,7 @@ public class Guard extends DudeModel {
     private int chaseTimer;
     private boolean cameraAlerted;
 
+
     /**
      * Creates a new dude with degenerate settings
      * <p>
@@ -35,6 +36,8 @@ public class Guard extends DudeModel {
     public void setCameraAlerted(boolean value) {
         cameraAlerted = value;
     }
+
+    public
 
     /** The position that this guard should move to */
     Vector2 target = null;

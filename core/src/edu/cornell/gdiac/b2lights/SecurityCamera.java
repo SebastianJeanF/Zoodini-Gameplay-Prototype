@@ -8,10 +8,6 @@ public class SecurityCamera extends DudeModel {
     private int blindTimer;
 
 
-
-
-
-
     public SecurityCamera(String type) {
         super(type);
         blinded = false;

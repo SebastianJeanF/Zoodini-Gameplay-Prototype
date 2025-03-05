@@ -73,6 +73,7 @@ public class InputController {
 
 	/** Was the ability button pressed? */
 	private boolean abilityPressed;
+	private boolean abilityPrevious;
 
 	/** An X-Box controller (if it is connected) */
 	XBoxController xbox;
@@ -158,7 +159,7 @@ public class InputController {
 	}
 
 	public boolean isAbilityPressed() {
-		return abilityPressed;
+		return abilityPressed && !abilityPrevious;
 	}
 
 	/**
@@ -189,6 +190,7 @@ public class InputController {
 		nextPrevious = nextPressed;
 		prevPrevious = prevPressed;
 		swapPrevious = swapPressed;
+		abilityPrevious = abilityPressed;
 
 		// Check to see if a GamePad is connected
 		if (xbox != null && xbox.isConnected()) {
@@ -239,7 +241,7 @@ public class InputController {
 		nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
 		exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
 		swapPressed = (secondary && swapPressed) || (Gdx.input.isKeyPressed(Input.Keys.SPACE));
-		abilityPressed = (secondary && swapPressed) || (Gdx.input.isKeyPressed(Input.Keys.E));
+		abilityPressed = (secondary && abilityPressed) || (Gdx.input.isKeyPressed(Input.Keys.E));
 
 		// Directional controls
 		horizontal = (secondary ? horizontal : 0.0f);

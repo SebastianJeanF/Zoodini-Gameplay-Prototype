@@ -294,6 +294,20 @@ public class GameController implements Screen, ContactListener {
 		} else if (countdown == 0) {
 			reset();
 		}
+
+		DudeModel avatar = level.getAvatar();
+		// Check if the ability (meow) is pressed.
+		// For a Gar, this sets a flag to indicate a meow event.
+		if (input.isAbilityPressed()) {
+			switch (avatar.getPlayerType()) {
+				case GAR:
+					((Gar) avatar).setMeowed(true);
+					break;
+				case OTTO:
+					((Otto) avatar).setInked(true);
+					break;
+			}
+		}
 		
 		return true;
 	}
@@ -336,6 +350,7 @@ public class GameController implements Screen, ContactListener {
 		InputController input = InputController.getInstance();
 
 
+
 		// Press N or P to switch light modes
 		if (input.didForward()) {
 			level.activateNextLight();
@@ -349,18 +364,7 @@ public class GameController implements Screen, ContactListener {
 			((Otto) avatar).setFlipScale(1.0f);
 		}
 
-		// Check if the ability (meow) is pressed.
-		// For a Gar, this sets a flag to indicate a meow event.
-		if (input.isAbilityPressed()) {
-			switch (avatar.getPlayerType()) {
-				case GAR:
-					((Gar) avatar).setMeowed(true);
-					break;
-				case OTTO:
-					((Otto) avatar).setInked(true);
-					break;
-			}
-		}
+
 
 
 		// --- Meow Alert Section ---
@@ -375,7 +379,7 @@ public class GameController implements Screen, ContactListener {
 					guard.setAgroed(gar.getPosition().cpy(), true);
 					guard.setChaseTimer(Guard.MAX_CHASE_TIME); // Reset the chase timer (adjust as needed)
 					System.out.println("Guard alerted by meow, moving to meow position");
-					gar.setMeowed(false);  // Reset the meow flag
+//					gar.setMeowed(false);  // Reset the meow flag
 				}
 				break;
 			}
@@ -383,8 +387,7 @@ public class GameController implements Screen, ContactListener {
 				Otto otto = (Otto) avatar;
 				if (otto.getInked()) {
 					securityCamera.setBlind(true);
-					otto.setInked(false);
-
+//					otto.setInked(false);
 				}
 			}
 				break;
@@ -517,28 +520,106 @@ public class GameController implements Screen, ContactListener {
 
 
 		// Additional avatar-specific logic (e.g., Gar's meow ability)
-		switch (avatar.getPlayerType()) {
-			case GAR:
-				Gar gar = (Gar) avatar;
-				if (gar.getMeowed() == true) {
-					// code for updating the nearest guard goes here
-					System.out.println("Gar meowed a guard to his location");
-					gar.setMeowed(false);
-				}
-			default:
-				break;
-		}
+//		switch (avatar.getPlayerType()) {
+//			case GAR:
+//				Gar gar = (Gar) avatar;
+//				if (gar.getMeowed() == true) {
+//					// code for updating the nearest guard goes here
+//					System.out.println("Gar meowed a guard to his location");
+//					gar.setMeowed(false);
+//				}
+//			default:
+//				break;
+//		}
+//
+
 		// Stops afk avatar from continuously sliding, if he got hit by something
 		DudeModel afkAvatar = level.getAvatarAFK();
 		afkAvatar.applyForce();
 		// Stops guard from continuously sliding, if they got hit by something
 		guard.applyForce();
 
+		// Update stamina for both characters - this also swaps the active character
+		// if the active character runs out of stamina.
+		updateStamina();
+
+		// Reset the ability flags for both characters.
+		resetAbility();
+
 		// Turn the physics engine crank.
 		level.update(dt);
 	}
 
+	void updateStamina() {
+		// Constants: adjust these values as needed.
+		final float ACTIVE_DRAIN = 0.1f;
+		final float ABILITY_DRAIN = 50.0f;
+		final float AFK_RECOVERY = 0.2f;
 
+		DudeModel activeAvatar = level.getAvatar();
+		DudeModel afkAvatar = level.getAvatarAFK();
+
+	// If the active character uses an ability, subtract extra stamina.
+		if (activeAvatar.getPlayerType() == DudeModel.DudeType.GAR) {
+			Gar gar = (Gar) activeAvatar;
+			if (gar.getMeowed()) {
+				activeAvatar.setStamina(Math.max(0, activeAvatar.getStamina() - ABILITY_DRAIN));
+			}
+		} else if (activeAvatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+			Otto otto = (Otto) activeAvatar;
+			if (otto.getInked()) {
+				activeAvatar.setStamina(Math.max(0, activeAvatar.getStamina() - ABILITY_DRAIN));
+			}
+		}
+
+	// Drain stamina for the active character every frame.
+		activeAvatar.setStamina(Math.max(0, activeAvatar.getStamina() - ACTIVE_DRAIN));
+
+	// Recover stamina for the inactive (AFK) character,
+	// capping it at its maximum value.
+		afkAvatar.setStamina(Math.min(afkAvatar.getMaxStamina(),
+				afkAvatar.getStamina() + AFK_RECOVERY));
+
+		// If the active character has run out of stamina,
+		// and the inactive character still has some, swap them.
+		if (activeAvatar.getStamina() <= 0 && afkAvatar.getStamina() > 0) {
+
+			// Stop the active character's movement.
+			activeAvatar.setMovement(0, 0);
+
+
+			level.swap();
+			// Exit the stamina update early to avoid further drain in this frame.
+			return;
+		}
+
+
+	}
+
+	/***
+	 * Sets the abilities for the characters to false
+	 */
+	void resetAbility() {
+		DudeModel avatar = level.getAvatar();
+		DudeModel afkAvatar = level.getAvatarAFK();
+		switch (avatar.getPlayerType()) {
+			case GAR:
+				((Gar) avatar).setMeowed(false);
+				break;
+			case OTTO:
+				((Otto) avatar).setInked(false);
+				break;
+		}
+
+		switch (afkAvatar.getPlayerType()) {
+			case GAR:
+				((Gar) afkAvatar).setMeowed(false);
+				break;
+			case OTTO:
+				((Otto) afkAvatar).setInked(false);
+				break;
+		}
+	}
 
 	/**
 	 * Draw the physics objects to the canvas
@@ -552,9 +633,9 @@ public class GameController implements Screen, ContactListener {
 	 */
 	public void draw(float delta) {
 		canvas.clear();
-		
 		level.draw(canvas);
-				
+		drawStaminaBar();
+
 		// Final message
 		if (complete && !failed) {
 			displayFont.setColor(Color.YELLOW);
@@ -702,6 +783,55 @@ public class GameController implements Screen, ContactListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	private void drawStaminaBar() {
+		// Assume:
+// - 'level.getAvatar()' returns the active character.
+// - 'level.getAvatarAFK()' returns the inactive character.
+// - Each DudeModel now has getStamina() and getMaxStamina() methods.
+// - 'whitePixel' is a Texture (1x1 white pixel) loaded in your asset directory.
+
+// Example constants – adjust positions, sizes, and colors as needed.
+		final float barWidth = 200;   // full width of the stamina bar
+		final float barHeight = 20;   // height of the bar
+		final float xPos = 0;        // x-coordinate of the bar (for active character)
+		final float yPos = 0; // y-coordinate (from top)
+//		final float xPos = 50;        // x-coordinate of the bar (for active character)
+//		final float yPos = canvas.getHeight() - 50; // y-coordinate (from top)
+
+// Active character's stamina
+		DudeModel active = level.getAvatar();
+		float activeRatio = active.getStamina() / active.getMaxStamina();
+		System.out.println(active.getStamina());
+		float activeFilledWidth = activeRatio * barWidth;
+
+// Inactive character's stamina
+		DudeModel afk = level.getAvatarAFK();
+		float afkRatio = afk.getStamina() / afk.getMaxStamina();
+		float afkFilledWidth = afkRatio * barWidth;
+
+		// Now get the texture from the AssetManager singleton
+		JsonValue json = levelFormat.getChild("stamina");
+		String key = json.get("texture").asString();
+		TextureRegion whitePixel = new TextureRegion(directory.getEntry(key, Texture.class));
+//		setTexture(texture);
+
+
+// Begin drawing with the canvas.
+		canvas.begin();
+// Draw active character stamina background (e.g., dark gray)
+//		canvas.draw(whitePixel, Color.DARK_GRAY, xPos, yPos, barWidth, barHeight);
+// Draw active character stamina (e.g., green)
+		canvas.draw(whitePixel, Color.GREEN, xPos, yPos, activeFilledWidth, barHeight);
+
+// Optionally, draw the inactive character's bar elsewhere (e.g., lower on the screen)
+		float afkXPos = 50;
+		float afkYPos = yPos - 30; // 30 pixels below active bar
+		canvas.draw(whitePixel, Color.DARK_GRAY, afkXPos, afkYPos, barWidth, barHeight);
+		canvas.draw(whitePixel, Color.GREEN, afkXPos, afkYPos, afkFilledWidth, barHeight);
+		canvas.end();
 
 	}
 

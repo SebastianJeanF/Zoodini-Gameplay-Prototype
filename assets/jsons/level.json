@@ -118,7 +118,8 @@
       	"walklimit":		4,
         "texture":     	"gar.walking",
        	"debugcolor":  	"white",
-       	"debugopacity":	192
+       	"debugopacity":	192,
+		"maxstamina": 100
     },
 	"avatarOtto": {
 		"pos":        	[ 10, 1.5],
@@ -136,7 +137,8 @@
 		"walklimit":		4,
 		"texture":     	"otto.walking",
 		"debugcolor":  	"white",
-		"debugopacity":	192
+		"debugopacity":	192,
+		"maxstamina": 100
 	},
 	"guard": {
 		"pos":        	[ 5, 7],
@@ -154,7 +156,8 @@
 		"walklimit":		4,
 		"texture":     	"guard.walking",
 		"debugcolor":  	"white",
-		"debugopacity":	192
+		"debugopacity":	192,
+		"maxstamina": 100
 	},
     "exit": {
         "pos":          [ 1.5, 10.35],
@@ -167,8 +170,8 @@
       	"excludeBits":	"0000",
         "texture":      "goal",
        	"debugcolor":   "yellow",
-       	"debugopacity":  200
-    },
+       	"debugopacity":  200,
+	},
     "exterior": {
         "wall1": {
             "vertices": 16,
@@ -207,6 +210,11 @@
             "debugopacity":  200
         },
     },
+	"stamina": {
+		"" : {
+			"texture": "white"
+		}
+	},
   	"interior": {
   		"maze1": {
         	"pos":        	[ 1.75f, 3.0f],

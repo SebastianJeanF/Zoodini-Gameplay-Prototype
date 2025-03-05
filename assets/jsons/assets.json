@@ -1,5 +1,10 @@
 {
     "textures": {
+		"white" : {
+			"file":	 "textures/white_pixel.png",
+			"wrapU": "repeated",
+			"wrapV": "repeated"
+		},
     	"earth": {
     		"file":	 "textures/earthtile.png",
 			"wrapU": "repeated",
