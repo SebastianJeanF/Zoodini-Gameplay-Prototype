@@ -8,7 +8,7 @@
  *
  * Author: Walker M. White
  * Based on original Optimization Lab by Don Holden, 2007
- * LibGDX version, 2/2/2015
+ * LibGDX version, 2/2/2015d
  */
 package edu.cornell.gdiac.b2lights.desktop;
 
