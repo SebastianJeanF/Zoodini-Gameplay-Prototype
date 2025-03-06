@@ -329,9 +329,13 @@ public class GameController implements Screen, ContactListener {
 			if (guard.isMeowed()) {
 				direction.scl(0.5f);
 			}
-			if (guard.isAgroed()){
-//				direction.scl(1.25f);
+			else if (guard.isAgroed()){
+				direction.scl(1.1f);
 			}
+			else if (guard.isCameraAlerted()) {
+				direction.scl(1.5f);
+			}
+
 			guard.setMovement(direction.x, direction.y);
 			// Update guard orientation to face the target.
 			guard.setAngle(direction.angleRad());
@@ -373,7 +377,11 @@ public class GameController implements Screen, ContactListener {
 		if (level.isAvatarInSecurityLight()) {
 			guard.setMeow(false);
 			guard.setAgroed(true);
-			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+			guard.setCameraAlerted(true);
+			guard.setTarget(avatar.getPosition().cpy());
+
+			// Guard should be extra aggressive in chasing player
+			guard.setChaseTimer(Guard.MAX_CHASE_TIME * 2);
 			System.out.println("Guard alerted by security camera light!");
 		}
 
@@ -436,6 +444,7 @@ public class GameController implements Screen, ContactListener {
 			if (guard.getChaseTimer() <= 0) {
 				// Guard is not chasing player anymore
 				guard.setAgroed(false);
+				guard.setCameraAlerted(false);
 			}
 		}
 
