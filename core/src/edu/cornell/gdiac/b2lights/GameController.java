@@ -543,12 +543,20 @@ public class GameController implements Screen, ContactListener {
 
 	void updateStamina() {
 		// Constants: adjust these values as needed.
-		final float ACTIVE_DRAIN = 0.1f;
+		float ACTIVE_DRAIN = 0.1f;
 		final float ABILITY_DRAIN = 50.0f;
 		final float AFK_RECOVERY = 0.2f;
 
 		DudeModel activeAvatar = level.getAvatar();
 		DudeModel afkAvatar = level.getAvatarAFK();
+
+		// If the player didn't move, set drain to zero
+		InputController input = InputController.getInstance();
+		if (input.getHorizontal() == 0 && input.getVertical() == 0) {
+			ACTIVE_DRAIN = 0.0f;
+		} else {
+			ACTIVE_DRAIN = 0.1f;
+		}
 
 	// If the active character uses an ability, subtract extra stamina.
 		if (activeAvatar.getPlayerType() == DudeModel.DudeType.GAR) {
