@@ -1,6 +1,6 @@
 {
 	"physicsSize":  	[16.0,12.0],
-	"graphicSize":    	[ 800, 600],
+	"graphicSize":    	[ 1600, 1200],
 	"fpsRange":		  	[  20,  60],
 	"lighting": {
 		"color":	  	[0.25, 0.25, 0.25, 0.25],
