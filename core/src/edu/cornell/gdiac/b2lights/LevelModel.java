@@ -335,8 +335,10 @@ public class LevelModel {
 		// Add level goal
 		goalDoor = new ExitModel();
 		goalDoor.initialize(directory, levelFormat.get("exit"));
-		goalDoor.setHeightScale(0.5f);
-		goalDoor.setWidthScale(0.5f);
+//		goalDoor.setHeightScale(0.5f);
+//		goalDoor.setWidthScale(0.5f);
+		goalDoor.setHeightScale(0.3f);
+		goalDoor.setWidthScale(0.3f);
 		goalDoor.setDrawScale(new Vector2(scale.x - 3,scale.y - 3));
 		activate(goalDoor);
 
@@ -362,8 +364,10 @@ public class LevelModel {
 	    avatar = new Gar();
 		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
-		avatar.setHeightScale(0.6f);
-		avatar.setWidthScale(0.6f);
+//		avatar.setHeightScale(0.6f);
+//		avatar.setWidthScale(0.6f);
+		avatar.setHeightScale(0.45f);
+		avatar.setWidthScale(0.45f);
 	    avatar.setDrawScale(scale);
 		avatar.setMaxStamina(MAX_STAMINA);
 		avatar.setStamina(MAX_STAMINA);
@@ -375,8 +379,10 @@ public class LevelModel {
 		avatarAFK = new Otto();
 		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
-		avatarAFK.setHeightScale(1.6f);
-		avatarAFK.setWidthScale(1.6f);
+//		avatarAFK.setHeightScale(1.6f);
+//		avatarAFK.setWidthScale(1.6f);
+		avatarAFK.setHeightScale(1.3f);
+		avatarAFK.setWidthScale(1.3f);
 		avatarAFK.setDrawScale(scale);
 		avatarAFK.setMaxStamina(MAX_STAMINA);
 		avatarAFK.setStamina(MAX_STAMINA);
@@ -387,8 +393,10 @@ public class LevelModel {
 		guard = new Guard("Guard");
 		JsonValue guardData = levelFormat.get("guard");
 		guard.initialize(directory, guardData);
-		guard.setHeightScale(1.5f);
-		guard.setWidthScale(1.5f);
+//		guard.setHeightScale(1.5f);
+//		guard.setWidthScale(1.5f);
+		guard.setHeightScale(1.2f);
+		guard.setWidthScale(1.2f);
 		guard.setDrawScale(scale);
 		activate(guard);
 
@@ -396,8 +404,10 @@ public class LevelModel {
 		securityCamera = new SecurityCamera("SecurityCamera");
 		JsonValue camdata = levelFormat.get("securityCamera");
 		securityCamera.initialize(directory, camdata);
-		securityCamera.setHeightScale(0.5f);
-		securityCamera.setWidthScale(0.5f);
+//		securityCamera.setHeightScale(0.5f);
+//		securityCamera.setWidthScale(0.5f);
+		securityCamera.setHeightScale(0.4f);
+		securityCamera.setWidthScale(0.4f);
 		securityCamera.setDrawScale(scale);
 		activate(securityCamera);
 

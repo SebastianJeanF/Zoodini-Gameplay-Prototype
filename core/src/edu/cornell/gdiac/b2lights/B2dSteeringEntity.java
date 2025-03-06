@@ -104,7 +104,7 @@ public class B2dSteeringEntity implements Steerable<Vector2> {
 
     @Override
     public void setOrientation(float v) {
-        
+
     }
 
     @Override
