@@ -315,13 +315,27 @@ public class GameController implements Screen, ContactListener {
 	private Vector2 angleCache = new Vector2();
 
 
+	/** Invariant: Guard's state must be updated before calling this method
+	 * i.e) target, agroed, meowed
+	 * */
+	void moveGuard() {
 
-	void moveGuard(Vector2 targetPos) {
+		Vector2 targetPos = level.getGuard().getTarget();
 		Guard guard = level.getGuard();
 		Vector2 guardPos = guard.getPosition();
 		Vector2 direction = new Vector2(targetPos).sub(guardPos);
 		if (direction.len() > 0) {
 			direction.nor().scl(guard.getForce());
+			if (guard.isMeowed()) {
+				direction.scl(0.5f);
+			}
+			else if (guard.isAgroed()){
+				direction.scl(1.1f);
+			}
+			else if (guard.isCameraAlerted()) {
+				direction.scl(1.5f);
+			}
+
 			guard.setMovement(direction.x, direction.y);
 			// Update guard orientation to face the target.
 			guard.setAngle(direction.angleRad());
@@ -331,6 +345,158 @@ public class GameController implements Screen, ContactListener {
 		Vector2 movement = guard.getMovement();
 		if (movement.len2() > 0.0001f) {  // Only update if there is significant movement
 			guard.setAngle(movement.angleRad() - (float)Math.PI/2);
+		}
+	}
+
+
+	private void updateGuardBehavior() {
+		Guard guard = level.getGuard();
+		DudeModel avatar = level.getAvatar();
+		SecurityCamera securityCamera = level.getSecurityCamera();
+
+
+		// Check for meow alert (Gar) or inked alert (Otto)
+		if (avatar.getPlayerType() == DudeModel.DudeType.GAR) {
+			Gar gar = (Gar) avatar;
+			if (gar.getMeowed()) {
+				// Make guard go after the meow
+				guard.setMeow(true);
+				guard.setTarget(gar.getPosition().cpy());
+				guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+				System.out.println("Guard alerted by meow, moving to meow position");
+			}
+		} else if (avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+			Otto otto = (Otto) avatar;
+			if (otto.getInked()) {
+				securityCamera.setBlind(true);
+			}
+		}
+
+
+		// Handle camera alert logic
+		if (level.isAvatarInSecurityLight()) {
+			guard.setMeow(false);
+			guard.setAgroed(true);
+			guard.setCameraAlerted(true);
+			guard.setTarget(avatar.getPosition().cpy());
+
+			// Guard should be extra aggressive in chasing player
+			guard.setChaseTimer(Guard.MAX_CHASE_TIME * 2);
+			System.out.println("Guard alerted by security camera light!");
+		}
+
+
+		// Reset camera alert when the guard reaches its target
+//		if ((guard.isCameraAlerted() && guard.getPosition().dst(guard.getTarget()) < 0.1f)
+//				|| guard.getChaseTimer() <= 0) {
+//			guard.setCameraAlerted(false);
+//		}
+
+		// Reset meow alert when the guard reaches its target
+		if ((guard.isMeowed() && guard.getPosition().dst(guard.getTarget()) < 0.1f)
+				) {
+			System.out.println("Guard is no longer following the meow");
+			guard.setMeow(false);
+		}
+
+		// Check Field-of-view (FOV), making guard agroed if they see a player
+		processGuardFOV(guard);
+
+		if (guard.isMeowed()) {
+			System.out.println("Guard is meowed, moving to meow position");
+		}
+
+
+		// Now that guard's state is updated, move the guard
+		if (!guard.isAgroed() && !guard.isMeowed()) {
+			updateGuardPatrol();
+		}
+		else {
+			// Guard is agroed or meowed
+			moveGuard();
+		}
+
+	}
+
+	private void processGuardFOV(Guard guard) {
+		DudeModel avatar = level.getAvatar();
+		DudeModel avatarAFK = level.getAvatarAFK();
+
+		LightSource guardLight = level.getGuardLight();
+		if(guardLight.contains(avatar.getX(), avatar.getY())){
+				// Guard is now chasing active player
+				guard.setAgroed(true);
+				guard.setMeow(false);
+				guard.setTarget(avatar.getPosition().cpy());
+				guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+				System.out.println("Guard alerted by FOV, moving to avatar position");
+		}
+		else if (guardLight.contains(avatarAFK.getX(), avatarAFK.getY())) {
+			// Guard is now chasing afk player
+			guard.setAgroed(true);
+			guard.setMeow(false);
+			guard.setTarget(avatarAFK.getPosition().cpy());
+			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+			System.out.println("Guard alerted by FOV, moving to avatarAFK position");
+		}
+		else {
+			guard.setChaseTimer(guard.getChaseTimer() - 1);
+			if (guard.getChaseTimer() <= 0) {
+				// Guard is not chasing player anymore
+				guard.setAgroed(false);
+				guard.setCameraAlerted(false);
+			}
+		}
+
+	}
+
+	private void updateGuardPatrol() {
+		Guard guard = level.getGuard();
+		if (patrolPoints != null && patrolPoints.length > 0) {
+			Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
+			if (guard.getPosition().dst(patrolTarget) < PATROL_THRESHOLD) {
+				currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.length;
+				patrolTarget = patrolPoints[currentPatrolIndex];
+			}
+			guard.setTarget(patrolTarget);
+			moveGuard();
+		} else {
+			guard.setMovement(0, 0);
+		}
+	}
+
+
+
+	private void updateAvatarMovement() {
+		DudeModel avatar = level.getAvatar();
+		InputController input = InputController.getInstance();
+		Vector2 angleCache = new Vector2(input.getHorizontal(), input.getVertical());
+
+		if (angleCache.len2() > 0.0f) {
+			if (angleCache.len() > 1.0f) {
+				angleCache.nor();
+			}
+			float angle = angleCache.angle();
+			angle = (float)Math.PI * (angle - 90.0f) / 180.0f;
+			avatar.setAngle(angle);
+		}
+
+		angleCache.scl(avatar.getForce());
+		avatar.setMovement(angleCache.x, angleCache.y);
+		avatar.applyForce();
+	}
+
+
+	private void updateSecurityCamera() {
+		SecurityCamera securityCamera = level.getSecurityCamera();
+		if (securityCamera.isBlinded() && securityCamera.getBlindTimer() >= 0) {
+			if (securityCamera.getBlindTimer() == 0) {
+				securityCamera.setBlind(false);
+				level.unBlindCamera();
+			} else {
+				securityCamera.setBlindTimer(securityCamera.getBlindTimer() - 1);
+				level.blindCamera();
+			}
 		}
 	}
 
@@ -345,210 +511,35 @@ public class GameController implements Screen, ContactListener {
 	 * @param delta Number of seconds since last animation frame
 	 */
 	public void update(float dt) {
-		// Process actions in object model
-		DudeModel avatar = level.getAvatar();
+
+		// Process input-dependent events
+		// (e.g., light switching could also be extracted if needed)
 		InputController input = InputController.getInstance();
-
-
-
-		// Press N or P to switch light modes
 		if (input.didForward()) {
 			level.activateNextLight();
 		} else if (input.didBack()){
 			level.activatePrevLight();
 		}
+		// Update avatar movement
+		updateAvatarMovement();
 
-		if (input.getFaceLeft() && avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
-			((Otto) avatar).setFlipScale(-1.0f);
-		} else if (avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
-			((Otto) avatar).setFlipScale(1.0f);
-		}
-
-
+		// Update guard and camera behavior
+		updateGuardBehavior();
+		updateSecurityCamera();
 
 
-		// --- Meow Alert Section ---
-		// If the Gar meows, immediately alert the guard.
-		Guard guard = level.getGuard();
-		SecurityCamera securityCamera = level.getSecurityCamera();
-		switch (avatar.getPlayerType()) {
-			case GAR:{
-				Gar gar = (Gar) avatar;
-				if (gar.getMeowed()) {
-					// When the guard hears a meow, its target is set to the Gar's position.
-					guard.setAgroed(gar.getPosition().cpy(), true);
-					guard.setChaseTimer(Guard.MAX_CHASE_TIME); // Reset the chase timer (adjust as needed)
-					System.out.println("Guard alerted by meow, moving to meow position");
-//					gar.setMeowed(false);  // Reset the meow flag
-				}
-				break;
-			}
-			case OTTO:{
-				Otto otto = (Otto) avatar;
-				if (otto.getInked()) {
-					securityCamera.setBlind(true);
-//					otto.setInked(false);
-				}
-			}
-				break;
-		}
+		// Apply forces for AFK avatar and guard to prevent sliding
+		level.getAvatarAFK().applyForce();
+		level.getGuard().applyForce();
 
-
-		// If Otto used his blind ability, check for conditions
-		if (securityCamera.isBlinded() && securityCamera.getBlindTimer() >= 0){
-			// Only unblind if timer is up
-			if (securityCamera.getBlindTimer() == 0) {
-				securityCamera.setBlind(false);
-				level.unBlindCamera();
-			}
-			// Otherwise remain blinded and reduce timer accordingly
-			else {
-				securityCamera.setBlindTimer(securityCamera.getBlindTimer() - 1);
-				level.blindCamera();
-			}
-		}
-
-
-
-		// --- Guard Field-of-View (FOV) Logic Section ---
-		// Only check FOV if guard is not already alerted by a meow.
-
-
-
-			if (!guard.isMeowed()) {
-			Vector2 guardPos = guard.getPosition();
-			Vector2 avatarPos = avatar.getPosition();
-			Vector2 toAvatar = new Vector2(avatarPos).sub(guardPos);
-			float distance = toAvatar.len();
-
-			//if (distance <= Guard.FOV_DISTANCE) {
-			LightSource guardlight = level.getGuardLight();
-			if(guardlight.contains(avatar.getX(), avatar.getY())){
-				Vector2 toAvatarNorm = new Vector2(toAvatar).nor();
-				// Assume guard's forward direction is defined by its current angle (0 rad = up)
-				float guardAngle = guard.getAngle();
-				Vector2 guardFacing = new Vector2(0, 1).setAngleRad(guardAngle + (float)Math.PI/2);
-				float dot = guardFacing.dot(toAvatarNorm);
-				// Calculate half-angle in radians.
-				float halfAngleRad = (Guard.FOV_ANGLE / 2.0f) * MathUtils.degreesToRadians;
-				if (dot >= Math.cos(halfAngleRad)) {
-					// The avatar is within the guard's field of view.
-					guard.setAgroed(avatar.getPosition(), false);
-					// guardAgro = true;
-					// guardTarget = avatar.getPosition();
-					guard.setChaseTimer(Guard.MAX_CHASE_TIME);
-					System.out.println("Guard alerted by FOV, moving to avatar position");
-				}
-				else {
-					// If already agro, decrement the chase timer.
-					guard.setChaseTimer(guard.getChaseTimer() - 1);
-					if (guard.getChaseTimer() <= 0 || (guard.isMeowed() && guard.getPosition().epsilonEquals(guard.getTarget(), 1))) {
-						guard.deAgro();
-						System.out.println("Guard de-agroed");
-					}
-			}}
-		}
-
-		guard.setChaseTimer(guard.getChaseTimer() - 1);
-		// --- Guard Movement Update ---
-
-		// Check if the avatar is illuminated by the security camera's light.
-		if (level.isAvatarInSecurityLight()) {
-			// Trigger the guard to chase the avatar.
-			guard.setCameraAlerted(true);
-			guard.setTarget(avatar.getPosition().cpy());
-			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
-			moveGuard(avatar.getPosition().cpy());
-			System.out.println("Guard alerted by security camera light!");
-		}
-
-
-		// Undo camera alert if they reached target
-		if (guard.isCameraAlerted()
-				&& guard.getPosition().dst(guard.getTarget()) < 0.1f || guard.getChaseTimer() <= 0) {
-			guard.setCameraAlerted(false);
-		}
-
-		// Undo meow if they reached target
-		if (guard.isMeowed()
-				&& guard.getPosition().dst(guard.getTarget()) < 0.1f || guard.getChaseTimer() <= 0) {
-			guard.setMeow(false);
-			guard.deAgro();
-		}
-
-		if (guard.isAgroed() ) {
-			// If alerted, chase the target.
-			Vector2 targetPos = guard.getTarget();
-			moveGuard(targetPos);
-
-//			System.out.println("Guard is agroed, target position: " + targetPos);
-		} else if (!guard.isCameraAlerted() && !guard.isMeowed()) {
-			// Patrol behavior: follow the defined patrol path.
-			if (patrolPoints != null && patrolPoints.length > 0) {
-				Vector2 patrolTarget = patrolPoints[currentPatrolIndex];
-				if (guard.getPosition().dst(patrolTarget) < PATROL_THRESHOLD) {
-					currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.length;
-					patrolTarget = patrolPoints[currentPatrolIndex];
-				}
-				moveGuard(patrolTarget);
-			} else {
-				guard.setMovement(0, 0);
-			}
-//			System.out.println("Guard is patrolling");
-		}
-
-		// --- Avatar Movement ---
-		// Rotate the avatar to face the direction of movement
-		angleCache.set(input.getHorizontal(),input.getVertical());
-		if (angleCache.len2() > 0.0f) {
-
-			// Stops you from moving faster if you press two keys at once
-			// instead of just one
-			if (angleCache.len() > 1.0f) {
-				angleCache.nor();
-			}
-
-			float angle = angleCache.angle();
-			// Convert to radians with up as 0
-			angle = (float)Math.PI*(angle-90.0f)/180.0f;
-			avatar.setAngle(angle);
-		}
-		angleCache.scl(avatar.getForce());
-		avatar.setMovement(angleCache.x,angleCache.y);
-		avatar.applyForce();
-
-
-
-		// Additional avatar-specific logic (e.g., Gar's meow ability)
-//		switch (avatar.getPlayerType()) {
-//			case GAR:
-//				Gar gar = (Gar) avatar;
-//				if (gar.getMeowed() == true) {
-//					// code for updating the nearest guard goes here
-//					System.out.println("Gar meowed a guard to his location");
-//					gar.setMeowed(false);
-//				}
-//			default:
-//				break;
-//		}
-//
-
-		// Stops afk avatar from continuously sliding, if he got hit by something
-		DudeModel afkAvatar = level.getAvatarAFK();
-		afkAvatar.applyForce();
-		// Stops guard from continuously sliding, if they got hit by something
-		guard.applyForce();
-
-		// Update stamina for both characters - this also swaps the active character
-		// if the active character runs out of stamina.
+		// Manage stamina and ability resets
 		updateStamina();
-
-		// Reset the ability flags for both characters.
 		resetAbility();
 
-		// Turn the physics engine crank.
+		// Update the physics simulation
 		level.update(dt);
 	}
+
 
 	void updateStamina() {
 		// Constants: adjust these values as needed.
@@ -801,13 +792,12 @@ public class GameController implements Screen, ContactListener {
 //		final float xPos = 50;        // x-coordinate of the bar (for active character)
 //		final float yPos = canvas.getHeight() - 50; // y-coordinate (from top)
 
-// Active character's stamina
+		// Active character's stamina
 		DudeModel active = level.getAvatar();
 		float activeRatio = active.getStamina() / active.getMaxStamina();
-		System.out.println(active.getStamina());
 		float activeFilledWidth = activeRatio * barWidth;
 
-// Inactive character's stamina
+		// Inactive character's stamina
 		DudeModel afk = level.getAvatarAFK();
 		float afkRatio = afk.getStamina() / afk.getMaxStamina();
 		float afkFilledWidth = afkRatio * barWidth;
@@ -819,14 +809,13 @@ public class GameController implements Screen, ContactListener {
 //		setTexture(texture);
 
 
-// Begin drawing with the canvas.
+		// Begin drawing with the canvas.
 		canvas.begin();
-// Draw active character stamina background (e.g., dark gray)
-//		canvas.draw(whitePixel, Color.DARK_GRAY, xPos, yPos, barWidth, barHeight);
-// Draw active character stamina (e.g., green)
+		// Draw active character stamina background (e.g., dark gray)
+		// canvas.draw(whitePixel, Color.DARK_GRAY, xPos, yPos, barWidth, barHeight);
+		// Draw active character stamina (e.g., green)
 		canvas.draw(whitePixel, Color.GREEN, xPos, yPos, activeFilledWidth, barHeight);
 
-// Optionally, draw the inactive character's bar elsewhere (e.g., lower on the screen)
 		float afkXPos = 50;
 		float afkYPos = yPos - 30; // 30 pixels below active bar
 		canvas.draw(whitePixel, Color.DARK_GRAY, afkXPos, afkYPos, barWidth, barHeight);
