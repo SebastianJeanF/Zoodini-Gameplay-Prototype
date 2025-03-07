@@ -8,7 +8,7 @@
  *
  * Author: Walker M. White
  * Based on original Optimization Lab by Don Holden, 2007
- * LibGDX version, 2/2/2015
+ * LibGDX version, 2/2/2015d
  */
 package edu.cornell.gdiac.b2lights.desktop;
 
@@ -34,7 +34,11 @@ public class DesktopLauncher {
 	 */
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setWindowedMode(800, 600);
+//		config.setWindowedMode(800, 600);
+//		config.setWindowedMode(1600, 1200);
+		config.setWindowedMode(1200, 800);
+
+		config.setForegroundFPS(60);
 		config.setResizable(false);
 		new Lwjgl3Application(new GDXRoot(), config);
 	}

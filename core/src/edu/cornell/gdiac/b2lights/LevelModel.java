@@ -92,6 +92,8 @@ public class LevelModel {
 	/** All of the active lights that we loaded from the JSON file */
 	private Array<LightSource> lights = new Array<LightSource>();
 
+	/** The radius of the security camera light */
+	private float securityCamLightDistance = 1;
 
 	/** Reference to the security camera */
 	private SecurityCamera securityCamera;
@@ -103,6 +105,8 @@ public class LevelModel {
 	private int activeGuardLight;
 	private LightSource securityCamLights;
 	private int activeSecurityCamLight;
+
+	private boolean isBlinded;
 
 	// TO FIX THE TIMESTEP
 	/** The maximum frames per second setting for this level */
@@ -119,9 +123,9 @@ public class LevelModel {
 	protected float physicsTimeLeft;
 
 	/** Add these fields at the top with the other fields **/
-	private float securityCamLightDistance;
 	private float securityCamConeAngle;
 
+	private float MAX_STAMINA = 100f;
 	private Grid grid;
 
 	/**
@@ -337,8 +341,10 @@ public class LevelModel {
 		// Add level goal
 		goalDoor = new ExitModel();
 		goalDoor.initialize(directory, levelFormat.get("exit"));
-		goalDoor.setHeightScale(0.25f);
-		goalDoor.setWidthScale(0.25f);
+//		goalDoor.setHeightScale(0.5f);
+//		goalDoor.setWidthScale(0.5f);
+		goalDoor.setHeightScale(0.3f);
+		goalDoor.setWidthScale(0.3f);
 		goalDoor.setDrawScale(new Vector2(scale.x - 3,scale.y - 3));
 		activate(goalDoor);
 
@@ -364,20 +370,28 @@ public class LevelModel {
 	    avatar = new Gar();
 		JsonValue avdata = levelFormat.get("avatarGar");
 	    avatar.initialize(directory, avdata);
-		avatar.setHeightScale(0.3f);
-		avatar.setWidthScale(0.3f);
+//		avatar.setHeightScale(0.6f);
+//		avatar.setWidthScale(0.6f);
+		avatar.setHeightScale(0.45f);
+		avatar.setWidthScale(0.45f);
 	    avatar.setDrawScale(scale);
+		avatar.setMaxStamina(MAX_STAMINA);
+		avatar.setStamina(MAX_STAMINA);
 	    activate(avatar);
 	    attachLights(avatar);
 
 
 		// Create the dude and attach light sources
-		avatarAFK = new DudeModel("Otto");
+		avatarAFK = new Otto();
 		avdata = levelFormat.get("avatarOtto");
 		avatarAFK.initialize(directory, avdata);
-		avatarAFK.setHeightScale(0.8f);
-		avatarAFK.setWidthScale(0.8f);
+//		avatarAFK.setHeightScale(1.6f);
+//		avatarAFK.setWidthScale(1.6f);
+		avatarAFK.setHeightScale(1.3f);
+		avatarAFK.setWidthScale(1.3f);
 		avatarAFK.setDrawScale(scale);
+		avatarAFK.setMaxStamina(MAX_STAMINA);
+		avatarAFK.setStamina(MAX_STAMINA);
 		activate(avatarAFK);
 
 
@@ -385,6 +399,10 @@ public class LevelModel {
 		guard = new Guard("Guard");
 		JsonValue guardData = levelFormat.get("guard");
 		guard.initialize(directory, guardData);
+//		guard.setHeightScale(1.5f);
+//		guard.setWidthScale(1.5f);
+		guard.setHeightScale(1.2f);
+		guard.setWidthScale(1.2f);
 		guard.setDrawScale(scale);
 		activate(guard);
 
@@ -392,8 +410,10 @@ public class LevelModel {
 		securityCamera = new SecurityCamera("SecurityCamera");
 		JsonValue camdata = levelFormat.get("securityCamera");
 		securityCamera.initialize(directory, camdata);
-		securityCamera.setHeightScale(0.25f);
-		securityCamera.setWidthScale(0.25f);
+//		securityCamera.setHeightScale(0.5f);
+//		securityCamera.setWidthScale(0.5f);
+		securityCamera.setHeightScale(0.4f);
+		securityCamera.setWidthScale(0.4f);
 		securityCamera.setDrawScale(scale);
 		activate(securityCamera);
 
@@ -403,7 +423,7 @@ public class LevelModel {
 		grid.printGrid();
 	}
 
-	
+
 	/**
 	 * Creates the ambient lighting for the level
 	 *
@@ -573,9 +593,23 @@ public class LevelModel {
 		securityCamLights.setActive(true);
 
 		// Store parameters for later security light detection
-		securityCamLightDistance = dist;
 		securityCamConeAngle = angle;
+
 	}
+
+	public void blindCamera() {
+		if (securityCamLights.isActive()){
+			securityCamLights.setActive(false);
+			isBlinded = true;
+		}
+
+	}
+
+	public void unBlindCamera() {
+		securityCamLights.setActive(true);
+		isBlinded = false;
+	}
+
 
 	
 	/**
@@ -732,9 +766,13 @@ public class LevelModel {
 	 */
 	public void draw(ObstacleCanvas canvas) {
 		canvas.clear();
-		
+
+
 		// Draw the sprites first (will be hidden by shadows)
 		canvas.begin();
+
+
+
 		for(Obstacle obj : objects) {
 			obj.draw(canvas);
 		}
@@ -805,35 +843,19 @@ public class LevelModel {
 
 
 	public boolean isAvatarInSecurityLight() {
-		if (securityCamera == null || avatar == null) return false;
+		if (securityCamera == null || avatar == null || isBlinded) return false;
 
-		// Get the security camera's position and the avatar's position.
+		// Get the positions of the security camera and the avatar.
 		Vector2 camPos = securityCamera.getPosition();
 		Vector2 avatarPos = avatar.getPosition();
 
-		// Compute the vector from the camera to the avatar.
-		Vector2 toAvatar = new Vector2(avatarPos).sub(camPos);
-		float distance = toAvatar.len();
+		// Compute the distance between them.
+		float distance = camPos.dst(avatarPos);
 
-		// If the avatar is farther than the light's distance, it's not illuminated.
-		if (distance > securityCamLightDistance) return false;
-
-		// Compute the security camera's effective facing direction.
-		// (Assuming the security camera's body rotation plus the 90° offset used in attach.)
-		float effectiveAngle = securityCamera.getAngle() + 90f;
-		float effectiveRad = effectiveAngle * MathUtils.degreesToRadians;
-		Vector2 camDir = new Vector2(MathUtils.cos(effectiveRad), MathUtils.sin(effectiveRad));
-
-		// Normalize the vector from the camera to the avatar.
-		toAvatar.nor();
-		float dot = camDir.dot(toAvatar);
-
-		// The half-angle of the light cone in radians.
-		float halfConeRad = (securityCamConeAngle * MathUtils.degreesToRadians) / 2;
-
-		// If the angle between the camera's facing and the vector to the avatar
-		// is less than half the cone angle, the avatar is in the light.
-		return dot >= Math.cos(halfConeRad);
+		// If the distance is less than or equal to the light's radius, the avatar is illuminated.
+		return distance <= securityCamLightDistance;
 	}
+
+
 
 }
