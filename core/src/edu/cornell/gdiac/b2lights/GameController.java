@@ -335,12 +335,12 @@ public class GameController implements Screen, ContactListener {
 		float targetPosY = level.getGrid().physicsToGridY(targetPos.y);
 		float guardPosX = level.getGrid().physicsToGridX(guardPos.x);
 		float guardPosY = level.getGrid().physicsToGridY(guardPos.y);
-		System.out.println(targetPosX + " " + targetPosY);
-		System.out.println(guardPosX + " " + guardPosY);
+//		System.out.println(targetPosX + " " + targetPosY);
+//		System.out.println(guardPosX + " " + guardPosY);
 		controller.selectTarget(targetPos.x, targetPos.y);
 		Vector2 direction = controller.getMoveAlongPathToGoalTile(guardPos.x, guardPos.y);
 		level.getGrid().resetGrid();
-		System.out.println(direction);
+//		System.out.println(dir/ection);
 
 		if (direction.len() > 0) {
 			direction.nor().scl(guard.getForce());
@@ -389,36 +389,36 @@ public class GameController implements Screen, ContactListener {
 		DudeModel avatar = level.getAvatar();
 		SecurityCamera securityCamera = level.getSecurityCamera();
 
-
+		moveGuardAI();
 		// Check for meow alert (Gar) or inked alert (Otto)
-		if (avatar.getPlayerType() == DudeModel.DudeType.GAR) {
-			Gar gar = (Gar) avatar;
-			if (gar.getMeowed()) {
-				// Make guard go after the meow
-				guard.setMeow(true);
-				guard.setTarget(gar.getPosition().cpy());
-				guard.setChaseTimer(Guard.MAX_CHASE_TIME);
-				System.out.println("Guard alerted by meow, moving to meow position");
-			}
-		} else if (avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
-			Otto otto = (Otto) avatar;
-			if (otto.getInked()) {
-				securityCamera.setBlind(true);
-			}
-		}
-
-
-		// Handle camera alert logic
-		if (level.isAvatarInSecurityLight()) {
-			guard.setMeow(false);
-			guard.setAgroed(true);
-			guard.setCameraAlerted(true);
-			guard.setTarget(avatar.getPosition().cpy());
-
-			// Guard should be extra aggressive in chasing player
-			guard.setChaseTimer(Guard.MAX_CHASE_TIME * 2);
-			System.out.println("Guard alerted by security camera light!");
-		}
+//		if (avatar.getPlayerType() == DudeModel.DudeType.GAR) {
+//			Gar gar = (Gar) avatar;
+//			if (gar.getMeowed()) {
+//				// Make guard go after the meow
+//				guard.setMeow(true);
+//				guard.setTarget(gar.getPosition().cpy());
+//				guard.setChaseTimer(Guard.MAX_CHASE_TIME);
+////				System.out.println("Guard alerted by meow, moving to meow position");
+//			}
+//		} else if (avatar.getPlayerType() == DudeModel.DudeType.OTTO) {
+//			Otto otto = (Otto) avatar;
+//			if (otto.getInked()) {
+//				securityCamera.setBlind(true);
+//			}
+//		}
+//
+//
+//		// Handle camera alert logic
+//		if (level.isAvatarInSecurityLight()) {
+//			guard.setMeow(false);
+//			guard.setAgroed(true);
+//			guard.setCameraAlerted(true);
+//			guard.setTarget(avatar.getPosition().cpy());
+//
+//			// Guard should be extra aggressive in chasing player
+//			guard.setChaseTimer(Guard.MAX_CHASE_TIME * 2);
+////			System.out.println("Guard alerted by security camera light!");
+//		}
 
 
 		// Reset camera alert when the guard reaches its target
@@ -427,30 +427,30 @@ public class GameController implements Screen, ContactListener {
 //			guard.setCameraAlerted(false);
 //		}
 
-		// Reset meow alert when the guard reaches its target
-		if ((guard.isMeowed() && guard.getPosition().dst(guard.getTarget()) < 0.1f)
-				) {
-			System.out.println("Guard is no longer following the meow");
-			guard.setMeow(false);
-		}
-
-		// Check Field-of-view (FOV), making guard agroed if they see a player
-		processGuardFOV(guard);
-
-		if (guard.isMeowed()) {
-			System.out.println("Guard is meowed, moving to meow position");
-		}
-
-
-		// Now that guard's state is updated, move the guard
-		if (!guard.isAgroed() && !guard.isMeowed()) {
-			updateGuardPatrol();
-		}
-		else {
-			// Guard is agroed or meowed
-//			moveGuard();
-			moveGuardAI();
-		}
+//		// Reset meow alert when the guard reaches its target
+//		if ((guard.isMeowed() && guard.getPosition().dst(guard.getTarget()) < 0.1f)
+//				) {
+////			System.out.println("Guard is no longer following the meow");
+//			guard.setMeow(false);
+//		}
+//
+//		// Check Field-of-view (FOV), making guard agroed if they see a player
+//		processGuardFOV(guard);
+//
+//		if (guard.isMeowed()) {
+////			System.out.println("Guard is meowed, moving to meow position");
+//		}
+//
+//
+//		// Now that guard's state is updated, move the guard
+//		if (!guard.isAgroed() && !guard.isMeowed()) {
+//			updateGuardPatrol();
+//		}
+//		else {
+//			// Guard is agroed or meowed
+////			moveGuard();
+//			moveGuardAI();
+//		}
 
 	}
 
@@ -465,7 +465,7 @@ public class GameController implements Screen, ContactListener {
 				guard.setMeow(false);
 				guard.setTarget(avatar.getPosition().cpy());
 				guard.setChaseTimer(Guard.MAX_CHASE_TIME);
-				System.out.println("Guard alerted by FOV, moving to avatar position");
+//				System.out.println("Guard alerted by FOV, moving to avatar position");
 		}
 		else if (guardLight.contains(avatarAFK.getX(), avatarAFK.getY())) {
 			// Guard is now chasing afk player
@@ -473,7 +473,7 @@ public class GameController implements Screen, ContactListener {
 			guard.setMeow(false);
 			guard.setTarget(avatarAFK.getPosition().cpy());
 			guard.setChaseTimer(Guard.MAX_CHASE_TIME);
-			System.out.println("Guard alerted by FOV, moving to avatarAFK position");
+//			System.out.println("Guard alerted by FOV, moving to avatarAFK position");
 		}
 		else {
 			guard.setChaseTimer(guard.getChaseTimer() - 1);

@@ -74,8 +74,8 @@ public class AIController {
 //        int targetGridY = grid.screenToGridY(targetY);
         int targetGridX = grid.physicsToGridX(targetX);
         int targetGridY = grid.physicsToGridY(targetY);
-        System.out.println("targetX: " + targetX + " targetY: " + targetY);
-        System.out.println("targetGridX: " + targetGridX + " targetGridY: " + targetGridY);
+//        System.out.println("targetX: " + targetX + " targetY: " + targetY);
+//        System.out.println("targetGridX: " + targetGridX + " targetGridY: " + targetGridY);
         // Mark the goal tile on the grid
         grid.setGoal(targetGridX, targetGridY);
     }
@@ -119,12 +119,12 @@ public class AIController {
         int startX = grid.physicsToGridX(guardX);
         int startY = grid.physicsToGridY(guardY);
 
-        System.out.println("in BFS");
-        System.out.println("Is Goal Set: " + grid.isGoalSet());
-        System.out.println("startX: " + startX + " startY: " + startY);
+//        System.out.println("in BFS");
+//        System.out.println("Is Goal Set: " + grid.isGoalSet());
+//        System.out.println("startX: " + startX + " startY: " + startY);
         grid.printGoalCoords();
 
-
+//        grid.printGrid();
 
         grid.setVisited(startX, startY);
         queue.addLast(new int[]{startX, startY, -1});
@@ -146,26 +146,33 @@ public class AIController {
         while (!queue.isEmpty()) {
             int[] cords = queue.removeFirst();
             int currX = cords[0]; int currY = cords[1]; int firstStep = cords[2];
-            System.out.println("currX: " + currX + " currY: " + currY);
             if (grid.isGoal(currX, currY)) {
                 if (firstStep == -1) { // goal is starting node
-                    System.out.println("no good 1");
+//                    System.out.println("no good 1");
                     return movementToVector(Movement.NO_ACTION);
                 }
                 return movementToVector(ordinalToMovement(firstStep));
             }
+//            System.out.println("currX: " + currX + " currY: " + currY);
+
             for (int[] dir : DIRECTIONS) { // add neighbors to the queue
                 int dx = dir[0]; int dy = dir[1];
                 int newX = currX + dx; int newY = currY + dy;
+
+//                if (grid.inBounds(newX, newY) ) {System.out.println("Tile at: " + newX + " " + newY + " is wall: " + grid.isWall(newX, newY));}
+
+
+                if(grid.inBounds(newX, newY) && grid.isWall(newX, newY)) System.out.println("wall at: " + newX + " " + newY);
+
                 if (grid.inBounds(newX, newY) && !grid.isWall(newX, newY) && !grid.isVisited(newX, newY)) {
-                    System.out.println("adding neighbor");
+//                    System.out.println("adding neighbor");
                     int[] neiCords = {newX, newY, firstStep};
                     queue.addLast(neiCords);
                     grid.setVisited(newX, newY);
                 }
             }
         }
-        System.out.println("no action returned");
+//        System.out.println("no action returned");
         return movementToVector(Movement.NO_ACTION);
     }
 

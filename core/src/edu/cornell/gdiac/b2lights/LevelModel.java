@@ -420,6 +420,7 @@ public class LevelModel {
 		createAndAttachGuardLights(levelFormat.get("securitylights"));
 
 		grid = new Grid(this, 1.f);
+		grid.printGrid();
 	}
 
 

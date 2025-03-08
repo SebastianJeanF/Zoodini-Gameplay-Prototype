@@ -117,7 +117,14 @@ public class Grid {
     public void resetGrid() {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                grid[i][j] = new TileState();
+
+                if (grid[i][j].visited) {
+                    grid[i][j].visited = false;
+                }
+               if (grid[i][j].goal) {
+                    grid[i][j].goal = false;
+                }
+//                grid[i][j] = new TileState();
             }
         }
     }
@@ -276,7 +283,7 @@ public class Grid {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 if (grid[i][j].goal) {
-                    System.out.println("Goal: " + i + " " + j);
+//                    System.out.println("Goal: " + i + " " + j);
                 }
             }
         }
