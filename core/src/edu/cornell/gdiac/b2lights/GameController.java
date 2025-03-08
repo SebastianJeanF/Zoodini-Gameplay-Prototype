@@ -322,6 +322,33 @@ public class GameController implements Screen, ContactListener {
 	
 	private Vector2 angleCache = new Vector2();
 
+	void moveGuardAI() {
+		AIController controller = controls[0];
+		Guard guard = level.getGuard();
+		DudeModel target = level.getAvatar();
+		if (target == null) {
+			return;
+		}
+		Vector2 targetPos = target.getPosition();
+		Vector2 guardPos = guard.getPosition();
+		float targetPosX = level.getGrid().physicsToGridX(targetPos.x);
+		float targetPosY = level.getGrid().physicsToGridY(targetPos.y);
+		float guardPosX = level.getGrid().physicsToGridX(guardPos.x);
+		float guardPosY = level.getGrid().physicsToGridY(guardPos.y);
+		System.out.println(targetPosX + " " + targetPosY);
+		System.out.println(guardPosX + " " + guardPosY);
+		controller.selectTarget(targetPos.x, targetPos.y);
+		Vector2 direction = controller.getMoveAlongPathToGoalTile(guardPos.x, guardPos.y);
+		level.getGrid().resetGrid();
+		System.out.println(direction);
+
+		if (direction.len() > 0) {
+			direction.nor().scl(guard.getForce());
+			guard.setMovement(direction.x, direction.y);
+			// Update guard orientation to face the target.
+			guard.setAngle(direction.angleRad());
+		}
+	}
 
 	/** Invariant: Guard's state must be updated before calling this method
 	 * i.e) target, agroed, meowed
@@ -421,7 +448,8 @@ public class GameController implements Screen, ContactListener {
 		}
 		else {
 			// Guard is agroed or meowed
-			moveGuard();
+//			moveGuard();
+			moveGuardAI();
 		}
 
 	}
@@ -467,7 +495,8 @@ public class GameController implements Screen, ContactListener {
 				patrolTarget = patrolPoints[currentPatrolIndex];
 			}
 			guard.setTarget(patrolTarget);
-			moveGuard();
+//			moveGuard();
+			moveGuardAI();
 		} else {
 			guard.setMovement(0, 0);
 		}

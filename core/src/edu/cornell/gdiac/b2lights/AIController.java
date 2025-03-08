@@ -20,14 +20,14 @@ public class AIController {
     }
 
     public static enum Movement {
-        /** Guard is moving right */
-        RIGHT,
+        /** Guard is moving down */
+        DOWN,
         /** Guard is moving up */
         UP,
         /** Guard is moving left */
         LEFT,
-        /** Guard is moving down */
-        DOWN,
+        /** Guard is moving right */
+        RIGHT,
         /** Guard is not moving */
         NO_ACTION
     }
@@ -70,8 +70,12 @@ public class AIController {
     public void selectTarget(float targetX, float targetY) {
         // Convert screen coordinates to grid coordinates
         // Grid grid = session.getGrid();
-        int targetGridX = grid.screenToGridX(targetX);
-        int targetGridY = grid.screenToGridY(targetY);
+//        int targetGridX = grid.screenToGridX(targetX);
+//        int targetGridY = grid.screenToGridY(targetY);
+        int targetGridX = grid.physicsToGridX(targetX);
+        int targetGridY = grid.physicsToGridY(targetY);
+        System.out.println("targetX: " + targetX + " targetY: " + targetY);
+        System.out.println("targetGridX: " + targetGridX + " targetGridY: " + targetGridY);
         // Mark the goal tile on the grid
         grid.setGoal(targetGridX, targetGridY);
     }
@@ -90,6 +94,16 @@ public class AIController {
         }
     }
 
+    public Movement ordinalToMovement(int ordinal) {
+        switch (ordinal) {
+            case 0: return Movement.DOWN;
+            case 1: return Movement.UP;
+            case 2: return Movement.LEFT;
+            case 3: return Movement.RIGHT;
+            default: return Movement.NO_ACTION;
+        }
+    }
+
 
     /**
      * Returns a movement direction that moves towards a goal tile.
@@ -99,20 +113,24 @@ public class AIController {
      *
      * @return a movement direction that moves towards a goal tile
      */
-    public int getMoveAlongPathToGoalTile() {
-        // Grid grid = session.getGrid();
-        System.out.println("here");
+    public Vector2 getMoveAlongPathToGoalTile(float guardX, float guardY) {
 
         Queue<int[]> queue = new Queue<>();
-        int startX = grid.screenToGridX(guard.getX());
-        int startY = grid.screenToGridY(guard.getY());
+        int startX = grid.physicsToGridX(guardX);
+        int startY = grid.physicsToGridY(guardY);
+
+        System.out.println("in BFS");
+        System.out.println("Is Goal Set: " + grid.isGoalSet());
+        System.out.println("startX: " + startX + " startY: " + startY);
+        grid.printGoalCoords();
+
+
 
         grid.setVisited(startX, startY);
         queue.addLast(new int[]{startX, startY, -1});
 
-        /** Direction vectors for 4-way movement (right, up, left, down) */
-        int[][] DIRECTIONS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-        Movement[] startingSteps = {Movement.DOWN, Movement.RIGHT, Movement.UP, Movement.LEFT};
+        int[][] DIRECTIONS = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+        Movement[] startingSteps = {Movement.DOWN, Movement.UP, Movement.LEFT, Movement.RIGHT};
 
         // Add the first steps into the queue
         for (int i = 0; i < DIRECTIONS.length; i++) {
@@ -128,23 +146,27 @@ public class AIController {
         while (!queue.isEmpty()) {
             int[] cords = queue.removeFirst();
             int currX = cords[0]; int currY = cords[1]; int firstStep = cords[2];
+            System.out.println("currX: " + currX + " currY: " + currY);
             if (grid.isGoal(currX, currY)) {
                 if (firstStep == -1) { // goal is starting node
-                    return Movement.NO_ACTION.ordinal();
+                    System.out.println("no good 1");
+                    return movementToVector(Movement.NO_ACTION);
                 }
-                return firstStep;
+                return movementToVector(ordinalToMovement(firstStep));
             }
             for (int[] dir : DIRECTIONS) { // add neighbors to the queue
                 int dx = dir[0]; int dy = dir[1];
                 int newX = currX + dx; int newY = currY + dy;
-                if (grid.inBounds(newX, newY) && !grid.isWall(newX, newY) && grid.isVisited(newX, newY)) {
+                if (grid.inBounds(newX, newY) && !grid.isWall(newX, newY) && !grid.isVisited(newX, newY)) {
+                    System.out.println("adding neighbor");
                     int[] neiCords = {newX, newY, firstStep};
                     queue.addLast(neiCords);
                     grid.setVisited(newX, newY);
                 }
             }
         }
-        return Movement.NO_ACTION.ordinal();
+        System.out.println("no action returned");
+        return movementToVector(Movement.NO_ACTION);
     }
 
 

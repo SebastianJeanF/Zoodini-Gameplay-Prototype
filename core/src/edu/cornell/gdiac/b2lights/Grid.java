@@ -93,9 +93,22 @@ public class Grid {
                         }
                     }
                 }
+
+
             }
 
         }
+        // Transpose Grid
+//        TileState[][] newGrid = new TileState[height][width];
+//        for (int i = 0; i < width; i++) {
+//            for (int j = 0; j < height; j++) {
+//                newGrid[j][i] = grid[i][j];
+//            }
+//        }
+//        grid = newGrid;
+//        int temp = width;
+//        width = height;
+//        height = temp;
     }
 
     /**
@@ -259,16 +272,44 @@ public class Grid {
         return (int)((physicsY - bounds.y) / tileSize);
     }
 
+    public void printGoalCoords() {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (grid[i][j].goal) {
+                    System.out.println("Goal: " + i + " " + j);
+                }
+            }
+        }
+    }
+
     public void printGrid() {
+        boolean gFlag = false;
         System.out.println(width);
         System.out.println(height);
         for (int j = height - 1; j >= 0; j--) {
             String[] row = new String[width];
             for (int i = 0; i < width; i++) {
-                row[i] = grid[i][j].wall ? "X" : "O";
+                if (grid[i][j].goal) {
+                    row[i] = "G";
+                    gFlag = true;
+                } else {
+                    row[i] = grid[i][j].wall ? "X" : "O";
+                }
             }
             System.out.println(String.join(" ", row));
         }
+        System.out.println("Goal: " + gFlag);
+    }
+
+    public boolean isGoalSet() {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (grid[i][j].goal) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
