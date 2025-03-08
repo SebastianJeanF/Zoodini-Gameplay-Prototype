@@ -292,6 +292,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 				scale*statusBkgLeft.getRegionWidth(), scale*statusBkgLeft.getRegionHeight());
 		canvas.draw(statusBkgRight,  Color.WHITE,centerX+width/2-scale*statusBkgRight.getRegionWidth(), centerY,
 				scale*statusBkgRight.getRegionWidth(), scale*statusBkgRight.getRegionHeight());
+
 		canvas.draw(statusBkgMiddle, Color.WHITE,centerX-width/2+scale*statusBkgLeft.getRegionWidth(), centerY,
 				width-scale*(statusBkgRight.getRegionWidth()+statusBkgLeft.getRegionWidth()),
 				scale*statusBkgMiddle.getRegionHeight());
